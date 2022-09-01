@@ -10,19 +10,19 @@ from segmentation.inference_tools.unet_segmentator import UnetSegmentator
 
 
 class DetectorWithSegmentator:
-    def __init__(self, detector_path: str, segmentator_path: str):
+    def __init__(self, detector_path: str, segmentator_path: str, device: str = 'cpu'):
         self.detector = Yolov5Detector(detector_path)
-        self.segmentator = UnetSegmentator(segmentator_path)
+        self.segmentator = UnetSegmentator(segmentator_path, device=device)
 
     def __call__(self, img, detector_conf=0.1, segmentator_conf=0.5, mask_abs_thresh=None, mask_rel_thresh=None):
 
         det_output = self.detector(img[:, :, ::-1], conf=detector_conf)
-        filtered_bboxes = []
+        det_seg_list = []
 
         for i in range(det_output.shape[0]):
             x, y, w, h, cls_conf, cls_id = det_output[i]
             if cls_id != 0:
-                filtered_bboxes.append(np.array([[x, y, w, h, cls_conf, cls_id]]))
+                det_seg_list.append(np.array([[x, y, w, h, cls_conf, cls_id]]))
                 continue
 
             crop_img = img[int(y):int(y + h), int(x):int(x + w)]
@@ -35,17 +35,20 @@ class DetectorWithSegmentator:
 
             if mask_abs_thresh is not None:
                 if obj_pixels_number >= mask_abs_thresh:
-                    filtered_bboxes.append(np.array([[x, y, w, h, cls_conf, cls_id]]))
+                    det_seg_list.append(np.array([[x, y, w, h, cls_conf, cls_id]]))
             elif mask_rel_thresh is not None:
                 # print(obj_pixels_number / all_pixels_number)    #
                 if obj_pixels_number / all_pixels_number >= mask_rel_thresh:
-                    filtered_bboxes.append(np.array([[x, y, w, h, cls_conf, cls_id]]))
+                    det_seg_list.append(np.array([[x, y, w, h, cls_conf, cls_id]]))
             else:
                 pass
 
-        if len(filtered_bboxes) == 0:
-            return np.zeros((0, 6))
-        return np.concatenate(filtered_bboxes, axis=0)
+        if len(det_seg_list) == 0:
+            det_seg_output = np.zeros((0, 6))
+        else:
+            det_seg_output = np.concatenate(det_seg_list, axis=0)
+
+        return det_output, det_seg_output
 
 
 def show_with_bboxes(winname, img, det_output):
