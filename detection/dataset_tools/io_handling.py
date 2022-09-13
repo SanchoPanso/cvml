@@ -1,5 +1,5 @@
 def read_yolo_labels(path: str) -> list:
-    with open(path) as f:
+    with open(path, 'r', encoding='utf-8') as f:
         rows = f.read().split('\n')
         lines = []
         for row in rows:

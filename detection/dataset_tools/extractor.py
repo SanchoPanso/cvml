@@ -1,12 +1,13 @@
 import os
 import json
+from typing import Callable
 
 
-class CocoExtractor:
+class Extractor:
     def __init__(self):
         pass
 
-    def __call__(self, path: str) -> dict:
+    def __call__(self, path: str, annotation_type: str = 'coco') -> dict:
         """
         Extract detection info from coco-annotation into yolov5-like form
         :param path: path to json-file with coco-annotation
@@ -21,7 +22,22 @@ class CocoExtractor:
          Key 'classes' - list of cls names
          Key 'annotations' - dict with keys - img name, value - bbox in form [cls_id, x_c, y_c, w, h]
         """
-        with open(path, encoding='utf-8') as f:
+
+        extract_function = self.get_extract_function(annotation_type)
+        annotation_data = extract_function(path)
+
+        return annotation_data
+
+    def get_extract_function(self, annotation_type: str) -> Callable:
+        if annotation_type == 'coco':
+            return self.extract_coco
+        elif annotation_type == 'yolo':
+            return self.extract_yolo
+        else:
+            raise ValueError("Wrong annotation type")
+
+    def extract_coco(self, path: str) -> dict:
+        with open(path) as f:
             input_data = json.load(f)
 
         classes = self.get_classes(input_data)
@@ -35,7 +51,6 @@ class CocoExtractor:
             annotations[file_name] = []
 
         for i, bbox_id in enumerate(bboxes.keys()):
-
             record = self.get_bbox_record(bbox_id, classes, images, bboxes)
             file_name, cls_num, x, y, w, h = record
             annotations[file_name].append([cls_num, x, y, w, h])
@@ -50,6 +65,9 @@ class CocoExtractor:
             'annotations': annotations,
         }
         return result
+
+    def extract_yolo(self, path: str) -> dict:
+        return {}
 
     def get_classes(self, input_data: dict) -> dict:
         input_categories = input_data['categories']

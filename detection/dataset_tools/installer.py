@@ -1,8 +1,11 @@
 import os
 import shutil
 import random
+from typing import Callable
 
 from .io_label_handler import IOLabelHandler
+
+from torch.utils.data import Dataset
 
 
 class Installer:
@@ -10,9 +13,11 @@ class Installer:
         self.train_percentage = 0.7
         self.valid_percentage = 0.2
 
-    def install_with_splitting(self, data: dict, images_dir: str, install_dir: str):
-        classes = data['classes']
-        annotations = data['annotations']
+    def install_with_splitting(self, annotation_data: dict, images_dir: str, install_dir: str,
+                               rename_func: Callable = None, rename_dict: dict = None,
+                               write_description: bool = True):
+        classes = annotation_data['classes']
+        annotations = annotation_data['annotations']
 
         # assign split name to every image
         split_dict = self.get_split_dict(list(annotations.keys()))
@@ -24,8 +29,10 @@ class Installer:
         for i, img_file_name in enumerate(annotations.keys()):
             print('{0}/{1}'.format(i + 1, len(annotations.keys())))
 
-            name = ''.join(img_file_name.split('.')[:-1])
+            name = os.path.splitext(img_file_name)[0]
             split_name = split_dict[img_file_name]
+
+
 
             # copy image to install dir
             shutil.copy(os.path.join(images_dir, img_file_name),
@@ -36,7 +43,8 @@ class Installer:
                                   f'{name}.txt',
                                   annotations[img_file_name])
 
-        self.write_description(classes, install_dir)
+        if write_description:
+            self.write_description(classes, install_dir)
 
     def install_with_anchor(self, data: dict, images_dir: str, install_dir: str, anchor_dataset_dir: str):
         classes = data['classes']
