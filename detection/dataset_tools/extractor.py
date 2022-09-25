@@ -48,12 +48,13 @@ class Extractor:
 
         for key in images.keys():
             file_name = images[key]['file_name']
-            annotations[file_name] = []
+            name, ext = os.path.splitext(file_name)
+            annotations[name] = []
 
         for i, bbox_id in enumerate(bboxes.keys()):
             record = self.get_bbox_record(bbox_id, classes, images, bboxes)
-            file_name, cls_num, x, y, w, h = record
-            annotations[file_name].append([cls_num, x, y, w, h])
+            name, cls_num, x, y, w, h = record
+            annotations[name].append([cls_num, x, y, w, h])
 
         classes_list = [0 for key in classes.keys()]
         for key in classes.keys():
@@ -124,11 +125,13 @@ class Extractor:
         height = images[image_id]['height']
         file_name = images[image_id]['file_name']
 
+        name, ext = os.path.splitext(file_name)
+
         x, y, w, h = bbox
         x = (x + w/2) / width
         y = (y + h/2) / height
         w /= width
         h /= height
 
-        return file_name, cls_num, x, y, w, h
+        return name, cls_num, x, y, w, h
 

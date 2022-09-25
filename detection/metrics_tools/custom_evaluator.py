@@ -44,11 +44,6 @@ class CustomEvaluator(Evaluator):
             dict['total FP']: total number of False Positive detections;
         """
 
-        # CUSTOM INSERT
-        gt_list = []  # list of ground truth bounding boxes
-        tp_list = []  # list of true positive bounding boxes
-        fp_list = []  # list of false positive bounding boxes
-
         ret = []  # list containing metrics (precision, recall, average precision) of each class
         # List with all ground truths (Ex: [imageName,class,confidence=1, (bb coordinates XYX2Y2)])
         groundTruths = []
@@ -60,7 +55,6 @@ class CustomEvaluator(Evaluator):
         for bb in boundingboxes.getBoundingBoxes():
             # [imageName, class, confidence, (bb coordinates XYX2Y2)]
             if bb.getBBType() == BBType.GroundTruth:
-                gt_list.append(bb)  # CUSTOM INSERT
                 groundTruths.append([
                     bb.getImageName(),
                     bb.getClassId(), 1,
@@ -80,6 +74,14 @@ class CustomEvaluator(Evaluator):
         # Precision x Recall is obtained individually by each class
         # Loop through by classes
         for c in classes:
+
+            # CUSTOM INSERT
+            gt_list = []  # list of ground truth bounding boxes
+            tp_list = []  # list of true positive bounding boxes
+            fp_list = []  # list of false positive bounding boxes
+            fn_list = []  # list of false negative bounding boxes
+
+
             # Get only detection of class c
             dects = []
             [dects.append(d) for d in detections if d[1] == c]
@@ -98,14 +100,30 @@ class CustomEvaluator(Evaluator):
             # create dictionary with amount of gts for each image
             det = {key: np.zeros(len(gts[key])) for key in gts}
 
+            # CUSTOM INSERT
+            tp_gt_idx = {}
+            for key in gts.keys():
+                tp_gt_idx[key] = set()
+                for i in range(len(gts[key])):
+                    image_name, class_id, confidence, bb_xyx2y2 = gts[key][i]
+                    gt_list.append(BoundingBox(image_name,
+                                                class_id,
+                                                bb_xyx2y2[0], bb_xyx2y2[1],
+                                                bb_xyx2y2[2] - bb_xyx2y2[0],
+                                                bb_xyx2y2[3] - bb_xyx2y2[1],
+                                                classConfidence=confidence))
+            
+            
             # print("Evaluating class: %s (%d detections)" % (str(c), len(dects)))
             # Loop through detections
             for d in range(len(dects)):
                 # print('dect %s => %s' % (dects[d][0], dects[d][3],))
                 # Find ground truth image
-                gt = gts[dects[d][0]] if dects[d][0] in gts else []
+                gt = gts[dects[d][0]] if dects[d][0] in gts else []    
                 iouMax = sys.float_info.min
+
                 for j in range(len(gt)):
+
                     # print('Ground truth gt => %s' % (gt[j][3],))
                     iou = Evaluator.iou(dects[d][3], gt[j][3])
                     if iou > iouMax:
@@ -116,6 +134,7 @@ class CustomEvaluator(Evaluator):
                     if det[dects[d][0]][jmax] == 0:
 
                         # CUSTOM INSERT
+                        tp_gt_idx[dects[d][0]].add(jmax)
                         image_name, class_id, confidence, bb_xyx2y2 = dects[d]
                         tp_list.append(BoundingBox(image_name,
                                                    class_id,
@@ -154,6 +173,19 @@ class CustomEvaluator(Evaluator):
 
                     FP[d] = 1  # count as false positive
                     # print("FP")
+
+                # CUSTOM INSERT
+            for key in gts.keys():
+                for i in range(len(gts[key])):
+                    if i not in tp_gt_idx[key]:
+                        image_name, class_id, confidence, bb_xyx2y2 = gts[key][i]
+                        fn_list.append(BoundingBox(image_name,
+                                            class_id,
+                                            bb_xyx2y2[0], bb_xyx2y2[1],
+                                            bb_xyx2y2[2] - bb_xyx2y2[0],
+                                            bb_xyx2y2[3] - bb_xyx2y2[1],
+                                            classConfidence=confidence))
+                    
             # compute precision, recall and average precision
             acc_FP = np.cumsum(FP)
             acc_TP = np.cumsum(TP)
@@ -180,6 +212,7 @@ class CustomEvaluator(Evaluator):
                 'gt_list': gt_list,
                 'tp_list': tp_list,
                 'fp_list': fp_list,
+                'fn_list': fn_list,
             }
             ret.append(r)
         return ret

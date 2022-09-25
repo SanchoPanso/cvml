@@ -1,6 +1,6 @@
 import os
 import cv2
-from extractor import Extractor
+from detection.dataset_tools.extractor import Extractor
 
 dataset_dir = r'E:\PythonProjects\AnnotationConverter\datasets'
 downloads_dir = r'C:\Users\Alex\Downloads'
@@ -28,11 +28,10 @@ def crop_segments(images_dir, masks_dir, detection_annotation, save_dir, dir_pos
 
     os.makedirs(save_dir, exist_ok=True)
 
-    for img_file in data['annotations'].keys():
-        print(img_file)
-        name, ext = os.path.splitext(img_file)
-        mask_file = name + mask_postfix + ext
-
+    for name in data['annotations'].keys():
+        print(name)
+        mask_file = name + mask_postfix + '.png'
+        img_file = name + '.png'
         if os.path.exists(os.path.join(masks_dir, mask_file)) is False:
             continue
 
@@ -44,7 +43,7 @@ def crop_segments(images_dir, masks_dir, detection_annotation, save_dir, dir_pos
         ret, mask = cv2.threshold(mask, 1, 255, cv2.THRESH_BINARY)
 
         height, width = img.shape[0:2]
-        for i, line in enumerate(data['annotations'][img_file]):
+        for i, line in enumerate(data['annotations'][name]):
             cls_id, xc, yc, w, h = line
 
             if int(cls_id) != comet_id:
