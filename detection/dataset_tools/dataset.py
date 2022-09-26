@@ -4,7 +4,7 @@ import random
 import math
 import numpy as np
 from abc import ABC
-from typing import List, Callable
+from typing import List, Set, Callable
 from enum import Enum
 
 from .io_handling import write_yolo_labels, read_yolo_labels
@@ -128,6 +128,19 @@ class Coco2YoloDataset:
                 images_dir = images_dir if install_images else None
                 labels_dir = labels_dir if install_labels else None
                 self.labeled_images[i].save(images_dir, labels_dir)
+    
+    def exclude_by_new_names(self, excluding_new_names: Set[str], splits: List[str]):
+        
+        for split in splits:
+            for i in range(len(self.splits[split]) - 1, -1, -1):
+                idx = self.splits[split][i]
+                labeled_image = self.labeled_images[idx]
+                new_name = labeled_image.new_name
+
+                if new_name in excluding_new_names:
+                    self.splits[split].pop(i)
+        
+
 
 
 
