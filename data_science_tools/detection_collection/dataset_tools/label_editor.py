@@ -6,7 +6,7 @@ class LabelEditor:
     def __init__(self):
         pass
 
-    def change_classes_in_lines(self, lines: List[list[float or int]], changes: dict) -> list:
+    def change_classes_in_lines(self, lines: List[List[float or int]], changes: dict) -> list:
         """
         Change class numbers in list of lines of yolov5's annotation
         :param lines: list of lines of yolov5's annotation
