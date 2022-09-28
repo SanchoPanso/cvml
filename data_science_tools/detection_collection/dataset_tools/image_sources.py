@@ -56,6 +56,10 @@ def convert_paths_to_sources(paths: List[List[str]], preprocess_fns: List[Callab
 
     if len(paths) == 0 or len(paths[0]) == 0:
         return []
+    
+    for i in range(1, len(paths)):
+        if len(paths[i - 1]) != len(paths[i]):
+            raise ValueError("Number of each channels paths must be the same")
 
     image_sources = []
     num_of_channels = len(paths)

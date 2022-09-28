@@ -72,7 +72,7 @@ if __name__ == '__main__':
 
         channel_0_paths = glob(os.path.join(polarization_dir, '*_1.*'))
         channel_1_paths = glob(os.path.join(polarization_dir, '*_2.*'))
-        channel_2_paths = glob(os.path.join(image_dir, '*'))
+        channel_2_paths = list(set(glob(os.path.join(image_dir, '*'))) - set(glob(os.path.join(image_dir, '*color*'))))
 
         channel_0_paths.sort(key=lambda x: int(os.path.split(x)[-1].split('.')[0].split('_')[0]))
         channel_1_paths.sort(key=lambda x: int(os.path.split(x)[-1].split('.')[0].split('_')[0]))
