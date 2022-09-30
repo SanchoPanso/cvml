@@ -96,9 +96,9 @@ class Visualiser:
         cv2.rectangle(img,
                       (x, y),
                       (x + w, y + h),
-                      color, 5)
+                      color, 3)
         cv2.putText(img,
                     description,
                     (x, y),
-                    cv2.FONT_HERSHEY_PLAIN, 4, color, 4)
+                    cv2.FONT_HERSHEY_PLAIN, 3, color, 3)
 

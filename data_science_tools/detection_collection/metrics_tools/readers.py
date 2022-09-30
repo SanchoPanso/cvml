@@ -46,31 +46,31 @@ def get_bounding_boxes_from_dir(txt_files_dir: str, bb_type: BBType, img_size: t
 
     for txt_file in txt_files:
         img_name = os.path.split(txt_file.replace(".txt", ""))[-1]
-        bounding_boxes += get_bounding_boxes_from_file(txt_file, bb_type, img_size)
+        # bounding_boxes += get_bounding_boxes_from_file(txt_file, bb_type, img_size)
 
-        # with open(txt_file, 'r') as f:
-        #     lines = f.read().split('\n')
+        with open(txt_file, 'r') as f:
+            lines = f.read().split('\n')
 
-        #     for line in lines:
-        #         if line == '':
-        #             continue
+            for line in lines:
+                if line == '':
+                    continue
 
-        #         if bb_type == BBType.GroundTruth:
-        #             cls_id, x, y, w, h = list(map(float, line.split(' ')))[:5]
-        #             bbox = BoundingBox(img_name, cls_id,
-        #                                x, y, w, h,
-        #                                CoordinatesType.Relative, img_size,
-        #                                bb_type,
-        #                                format=BBFormat.XYWH)
-        #         else:
-        #             cls_id, x, y, w, h, cls_conf = list(map(float, line.split(' ')))
-        #             bbox = BoundingBox(img_name, cls_id,
-        #                                x, y, w, h,
-        #                                CoordinatesType.Relative, img_size,
-        #                                bb_type,
-        #                                cls_conf,
-        #                                format=BBFormat.XYWH)
+                if bb_type == BBType.GroundTruth:
+                    cls_id, x, y, w, h = list(map(float, line.split(' ')))[:5]
+                    bbox = BoundingBox(img_name, cls_id,
+                                       x, y, w, h,
+                                       CoordinatesType.Relative, img_size,
+                                       bb_type,
+                                       format=BBFormat.XYWH)
+                else:
+                    cls_id, x, y, w, h, cls_conf = list(map(float, line.split(' ')))
+                    bbox = BoundingBox(img_name, cls_id,
+                                       x, y, w, h,
+                                       CoordinatesType.Relative, img_size,
+                                       bb_type,
+                                       cls_conf,
+                                       format=BBFormat.XYWH)
 
-        #         bounding_boxes.addBoundingBox(bbox)
+                bounding_boxes.addBoundingBox(bbox)
 
     return bounding_boxes
