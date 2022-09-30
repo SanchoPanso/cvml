@@ -15,7 +15,7 @@ from typing import Tuple
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from data_science_tools.detection_collection.inference_tools.yolov5_detector import Yolov5Detector
+from data_science_tools.detection.inference_tools.yolov5_detector import Yolov5Detector
 
 
 class GOLF_Albumentations:

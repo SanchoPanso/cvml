@@ -7,11 +7,11 @@ from typing import Callable
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from data_science_tools.detection_collection.dataset_tools.dataset import Coco2YoloDataset
-from data_science_tools.detection_collection.dataset_tools.extractor import Extractor
-from data_science_tools.detection_collection.dataset_tools.image_transforming import expo
-from data_science_tools.detection_collection.dataset_tools.label_editor import LabelEditor
-from data_science_tools.detection_collection.dataset_tools.image_sources import convert_paths_to_sources
+from data_science_tools.detection.dataset_tools.dataset import Coco2YoloDataset
+from data_science_tools.detection.dataset_tools.extractor import Extractor
+from data_science_tools.detection.dataset_tools.image_transforming import expo
+from data_science_tools.detection.dataset_tools.label_editor import LabelEditor
+from data_science_tools.detection.dataset_tools.image_sources import convert_paths_to_sources
 
 tmk_dir = r'D:\TMK'
 

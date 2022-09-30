@@ -6,8 +6,8 @@ from typing import Set
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from data_science_tools.detection_collection.dataset_tools.extractor import Extractor
-from data_science_tools.detection_collection.dataset_tools.image_transforming import expo
+from data_science_tools.detection.dataset_tools.extractor import Extractor
+from data_science_tools.detection.dataset_tools.image_transforming import expo
 
 crop_counter = 1
 comet_id = 0

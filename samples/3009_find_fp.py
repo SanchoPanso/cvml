@@ -5,10 +5,10 @@ from typing import List
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from data_science_tools.detection_collection.inference_tools.visualizer import Visualiser
-from data_science_tools.detection_collection.metrics_tools.metrics_utils import BBType, CoordinatesType, BBFormat
-from data_science_tools.detection_collection.metrics_tools import BoundingBox, BoundingBoxes, Evaluator, get_bounding_boxes_from_dir
-from data_science_tools.detection_collection.dataset_tools.io_handling import read_yolo_labels
+from data_science_tools.detection.inference_tools.visualizer import Visualiser
+from data_science_tools.detection.metrics.metrics_utils import BBType, CoordinatesType, BBFormat
+from data_science_tools.detection.metrics import BoundingBox, BoundingBoxes, Evaluator, get_bounding_boxes_from_dir
+from data_science_tools.detection.dataset_tools.io_handling import read_yolo_labels
 
 
 IMG_SIZE = (2448, 2048)
