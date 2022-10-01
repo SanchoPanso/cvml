@@ -9,7 +9,7 @@ class ImageSource(ABC):
     def get_name(self) -> str:
         pass
 
-    def read(self) -> np.ndarray:
+    def save_to(self, path: str):
         pass
 
 
@@ -23,9 +23,18 @@ class SingleImageSource(ImageSource):
         name, ext = os.path.splitext(filename)
         return name
 
-    def read(self):
+    def read(self) -> np.ndarray:
         img = cv2.imdecode(np.fromfile(self.path, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
         return img
+    
+    def write(self, path: str, img: np.ndarray):
+        ext = os.path.splitext(os.path.split(path)[-1])[1]
+        is_success, im_buf_arr = cv2.imencode(ext, img)
+        im_buf_arr.tofile(path)
+    
+    def save_to(self, path: str):
+        img = self.read()
+        self.write(path, img)
 
 
 class MultipleImageSource(ImageSource):
@@ -50,6 +59,15 @@ class MultipleImageSource(ImageSource):
 
         final_img = cv2.merge(imgs)
         return final_img
+    
+    def write(self, path: str, img: np.ndarray):
+        ext = os.path.splitext(os.path.split(path)[-1])[1]
+        is_success, im_buf_arr = cv2.imencode(ext, img)
+        im_buf_arr.tofile(path)
+    
+    def save_to(self, path: str):
+        img = self.read()
+        self.write(path, img)
 
 
 def convert_paths_to_sources(paths: List[List[str]], preprocess_fns: List[Callable], main_channel: int):

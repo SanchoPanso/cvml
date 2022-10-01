@@ -1,32 +1,43 @@
 import os
 import json
-from typing import Callable
+from typing import Callable, List, Dict
+
+from data_science_tools.core.bounding_box import BoundingBox, CoordinatesType
 
 
-class Extractor:
+class Annotation:
+    def __init__(self, 
+                 classes: List[str] = None, 
+                 bounding_boxes: Dict[str, List[BoundingBox]] = None):
+        
+        self.classes = [] if classes is None else classes
+        self.bounding_boxes = {} if bounding_boxes is None else bounding_boxes
+
+
+class AnnotationExtractor:
     def __init__(self):
         pass
 
-    def __call__(self, path: str, annotation_type: str = 'coco') -> dict:
-        """
-        Extract detection info from coco-annotation into yolov5-like form
-        :param path: path to json-file with coco-annotation
+    def __call__(self, path: str, annotation_type: str = 'coco') -> Annotation:
+        # """
+        # Extract detection info from coco-annotation into yolov5-like form
+        # :param path: path to json-file with coco-annotation
 
-        :return: dictionary with detection info in from like this:
-        {'classes': ['cls1', 'cls2', ...],
-         'annotations':{'1.png': [0, 0.1, 0.2, 0.05, 0.05],
-                        '2.png': [0, 0.1, 0.2, 0.05, 0.05],
-                        ...
-                        }
-         }
-         Key 'classes' - list of cls names
-         Key 'annotations' - dict with keys - img name, value - bbox in form [cls_id, x_c, y_c, w, h]
-        """
+        # :return: dictionary with detection info in from like this:
+        # {'classes': ['cls1', 'cls2', ...],
+        #  'annotations':{'1.png': [0, 0.1, 0.2, 0.05, 0.05],
+        #                 '2.png': [0, 0.1, 0.2, 0.05, 0.05],
+        #                 ...
+        #                 }
+        #  }
+        #  Key 'classes' - list of cls names
+        #  Key 'annotations' - dict with keys - img name, value - bbox in form [cls_id, x_c, y_c, w, h]
+        # """
 
         extract_function = self.get_extract_function(annotation_type)
-        annotation_data = extract_function(path)
+        annotation = extract_function(path)
 
-        return annotation_data
+        return annotation
 
     def get_extract_function(self, annotation_type: str) -> Callable:
         if annotation_type == 'coco':
@@ -36,7 +47,7 @@ class Extractor:
         else:
             raise ValueError("Wrong annotation type")
 
-    def extract_coco(self, path: str) -> dict:
+    def extract_coco(self, path: str) -> Annotation:
         with open(path) as f:
             input_data = json.load(f)
 
@@ -44,31 +55,28 @@ class Extractor:
         images = self.get_images(input_data)
         bboxes = self.get_bboxes(input_data)
 
-        annotations = {}
+        bb_dict = {}
 
         for key in images.keys():
             file_name = images[key]['file_name']
             name, ext = os.path.splitext(file_name)
-            annotations[name] = []
+            bb_dict[name] = []
 
         for i, bbox_id in enumerate(bboxes.keys()):
-            record = self.get_bbox_record(bbox_id, classes, images, bboxes)
-            name, cls_num, x, y, w, h = record
-            annotations[name].append([cls_num, x, y, w, h])
+            bbox = self.get_bbox(bbox_id, classes, images, bboxes)
+            name = bbox.get_image_name()
+            bb_dict[name].append(bbox)
 
-        classes_list = [0 for key in classes.keys()]
+        classes_list = ['' for key in classes.keys()]
         for key in classes.keys():
             cls_num = classes[key]['cls_num']
             classes_list[cls_num] = classes[key]['cls_name']
 
-        result = {
-            'classes': classes_list,
-            'annotations': annotations,
-        }
-        return result
+        annotation = Annotation(classes_list, bb_dict)
+        return annotation
 
-    def extract_yolo(self, path: str) -> dict:
-        return {}
+    def extract_yolo(self, path: str) -> Annotation:
+        return Annotation()
 
     def get_classes(self, input_data: dict) -> dict:
         input_categories = input_data['categories']
@@ -114,7 +122,7 @@ class Extractor:
             }
         return result
 
-    def get_bbox_record(self, bbox_id: str, classes: dict, images: dict, bboxes: dict) -> tuple:
+    def get_bbox(self, bbox_id: str, classes: dict, images: dict, bboxes: dict) -> BoundingBox:
         bbox = bboxes[bbox_id]['bbox']
         image_id = bboxes[bbox_id]['image_id']
         cls_id = bboxes[bbox_id]['cls_id']
@@ -128,10 +136,11 @@ class Extractor:
         name, ext = os.path.splitext(file_name)
 
         x, y, w, h = bbox
-        x = (x + w/2) / width
-        y = (y + h/2) / height
-        w /= width
-        h /= height
 
-        return name, cls_num, x, y, w, h
+        bounding_box = BoundingBox(cls_num, x, y, w, h, 
+                                   image_name=name, 
+                                   type_coordinates=CoordinatesType.Absolute, 
+                                   img_size=(width, height))
+
+        return bounding_box
 

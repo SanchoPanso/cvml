@@ -2,7 +2,7 @@ import os
 import glob
 import cv2
 import numpy as np
-from .yolov5_detector import Yolov5Detector
+from data_science_tools.core.detector import Detector
 
 
 def save_txt(img_size: tuple, detector_output: np.array, save_path: str):
@@ -19,7 +19,7 @@ def save_txt(img_size: tuple, detector_output: np.array, save_path: str):
 
 
 
-def detect_and_save(img_dir: str, save_dir: str, predictor: Yolov5Detector, conf: float = 0.1):
+def detect_and_save(img_dir: str, save_dir: str, predictor: Detector, conf: float = 0.1):
   img_files = glob.glob(os.path.join(img_dir, "*.jpg"))
   for img_file in img_files:
     img_name = os.path.split(img_file)[-1].replace(".jpg", "")
