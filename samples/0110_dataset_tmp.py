@@ -9,8 +9,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from data_science_tools.detection.dataset.detection_dataset import DetectionDataset
 from data_science_tools.detection.dataset.extractor import AnnotationExtractor, Annotation
+from data_science_tools.detection.dataset.annotation_converter import AnnotationConverter
 from data_science_tools.detection.dataset.image_transforming import expo
-from data_science_tools.detection.dataset.label_editor import LabelEditor
 from data_science_tools.detection.dataset.image_sources import convert_paths_to_sources
 
 tmk_dir = r'D:\TMK'
@@ -79,7 +79,7 @@ def rename_annotation_files(annotations_data: dict,  rename_callback: Callable) 
 if __name__ == '__main__':
     final_dataset = DetectionDataset()
     extractor = AnnotationExtractor()
-    label_editor = LabelEditor()
+    converter = AnnotationConverter()
 
     for i, dataset_dir in enumerate(dataset_dirs):
         print(dataset_dir)
@@ -104,18 +104,7 @@ if __name__ == '__main__':
         annotation_path = os.path.join(dataset_dir, 'annotations', 'instances_default.json')
         renamer = renamers[i]
 
-        annotation_data = extractor(annotation_path)
-        # annotation_data = rename_annotation_files(annotation_data, lambda x: x)
-        # changes = {0: 0, 
-        #            1: 1, 
-        #            2: 2, 
-        #            3: 3, 
-        #            4: 4, 
-        #            5: 5, 
-        #            6: 6, 
-        #            7: 7}
-        # label_editor.change_classes(annotation_data, changes, annotation_data['classes'])
-
+        annotation_data = converter.read_coco(annotation_path)
         dataset.update(image_sources, annotation_data)
         dataset.rename(renamer)    
         final_dataset = final_dataset + dataset

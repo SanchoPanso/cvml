@@ -144,3 +144,81 @@ class AnnotationExtractor:
 
         return bounding_box
 
+
+def annotation_to_coco(annotation: Annotation, path: str):
+    license = [{"name": "", "id": 0, "url": ""}]
+    info = {"contributor": "", 
+            "date_created": "", 
+            "description": "", 
+            "url": "", 
+            "version": "", 
+            "year": ""}
+    
+    categories = []
+    for i, cls in enumerate(annotation.classes):
+        category = {
+            "id": i + 1, 
+            "name": cls, 
+            "supercategory": ""
+        }
+        categories.append(category)
+    
+    images = []
+    img_id_dict = {}
+    for i, image_name in enumerate(annotation.bounding_boxes.keys()):
+        if len(annotation.bounding_boxes[image_name]) == 0:
+            continue
+        img_id = i + 1
+        img_id_dict[image_name] = img_id
+        image = {
+            "id": img_id, 
+            "width": 2448, 
+            "height": 2048, 
+            "file_name": image_name, 
+            "license": 0, 
+            "flickr_url": "", 
+            "coco_url": "", 
+            "date_captured": 0
+        }
+        images.append(image)
+    
+    annotations = []
+    bbox_id = 1
+    for i, image_name in enumerate(annotation.bounding_boxes.keys()):
+        if len(annotation.bounding_boxes[image_name]) == 0:
+            continue
+        img_id = i + 1
+        for bbox in annotation.bounding_boxes[image_name]:
+            x, y, w, h = bbox.get_absolute_bounding_box()
+            cls_id = bbox.get_class_id()
+            annotation = {
+                "id": bbox_id, 
+                "image_id": img_id, 
+                "category_id": cls_id + 1, 
+                "segmentation": [], 
+                "area": w * h, 
+                "bbox": [x, y, w, h], 
+                "iscrowd": 0, 
+                "attributes*": {"occluded": False, "rotation": 0.0}
+            }
+            bbox_id += 1
+            annotations.append(annotation)
+    
+    coco = {
+        'license': license,
+        'info': info,
+        'categories': categories,
+        'images': images,
+        'annotations': annotations, 
+    }
+
+    return coco
+
+
+
+
+    
+
+
+
+
