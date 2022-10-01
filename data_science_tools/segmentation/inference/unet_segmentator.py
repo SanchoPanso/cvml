@@ -7,8 +7,10 @@ import albumentations as albu
 import segmentation_models_pytorch as smp
 from segmentation_models_pytorch.utils.losses import DiceLoss
 
+from data_science_tools.core.segmenter import Segmenter
 
-class UnetSegmentator:
+
+class UnetSegmentator(Segmenter):
     def __init__(self, path: str, device: str = 'cpu'):
         self.model = torch.load(path, map_location=device)
         self.size_image = 128

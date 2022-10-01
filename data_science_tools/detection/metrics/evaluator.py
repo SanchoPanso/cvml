@@ -1,29 +1,18 @@
-###########################################################################################
-#                                                                                         #
-# Evaluator class: Implements the most popular metrics for object detection               #
-#                                                                                         #
-# Developed by: Rafael Padilla (rafael.padilla@smt.ufrj.br)                               #
-#        SMT - Signal Multimedia and Telecommunications Lab                               #
-#        COPPE - Universidade Federal do Rio de Janeiro                                   #
-#        Last modification: Oct 9th 2018                                                 #
-###########################################################################################
-
 import os
 import sys
 from collections import Counter
+from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .bounding_box import BoundingBox
-from .bounding_boxes import BoundingBoxes
+from data_science_tools.core.bounding_box import BoundingBox, BBType, BBFormat
 from .metrics_utils import MethodAveragePrecision
-from .metrics_utils import BBType, BBFormat
 
 
 class Evaluator:
     def GetPascalVOCMetrics(self,
-                            boundingboxes,
+                            boundingboxes: List[BoundingBox],
                             IOUThreshold=0.5,
                             method=MethodAveragePrecision.EveryPointInterpolation):
         """Get the metrics used by the VOC Pascal 2012 challenge.
@@ -59,7 +48,7 @@ class Evaluator:
         # Get all classes
         classes = []
         # Loop through all bounding boxes and separate them into GTs and detections
-        for bb in boundingboxes.getBoundingBoxes():
+        for bb in boundingboxes:
             # [imageName, class, confidence, (bb coordinates XYX2Y2)]
             if bb.getBBType() == BBType.GroundTruth:
                 groundTruths.append([
@@ -225,7 +214,7 @@ class Evaluator:
         return ret
 
     def PlotPrecisionRecallCurve(self,
-                                 boundingBoxes,
+                                 boundingBoxes: List[BoundingBox],
                                  IOUThreshold=0.5,
                                  method=MethodAveragePrecision.EveryPointInterpolation,
                                  showAP=False,

@@ -7,9 +7,9 @@ from abc import ABC
 from typing import List, Set, Callable
 from enum import Enum
 
-from .io_handling import write_yolo_labels, read_yolo_labels
-from .extractor import Extractor
-from .image_sources import ImageSource
+from ..data_science_tools.detection.dataset.io_handling import write_yolo_labels, read_yolo_labels
+from ..data_science_tools.detection.dataset.extractor import Extractor
+from ..data_science_tools.detection.dataset.image_sources import ImageSource
 
 
 class LabeledImage:
