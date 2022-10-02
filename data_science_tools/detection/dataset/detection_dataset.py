@@ -57,9 +57,20 @@ class DetectionDataset:
 
     def __add__(self, other):
         sum_labeled_images = self.labeled_images + other.labeled_images
-        # TODO
-        # sum_splits = self.splits + [i + len(self.labeled_images) for i in other.splits]
-        return DetectionDataset(sum_labeled_images)
+        
+        self_split_names = set(self.splits.keys())
+        other_split_names = set(other.splits.keys())
+        sum_split_names = self_split_names or other_split_names
+        sum_splits = {}
+        
+        for name in sum_split_names:
+            sum_splits[name] = []
+            if name in self_split_names:
+                sum_splits[name] += self.splits[name]
+            if name in other_split_names:
+                sum_splits[name] += list(map(lambda x: x + len(self), other.splits[name]))
+        
+        return DetectionDataset(sum_labeled_images, sum_splits)
 
     def update(self, image_sources: List[ImageSource] = None,
                annotation: Annotation = None):
