@@ -1,5 +1,39 @@
 import os
-from typing import List
+from typing import List, Dict
+from data_science_tools.core.bounding_box import BoundingBox
+from data_science_tools.detection.dataset.annotation_converter import Annotation
+
+
+class AnnotationEditor:
+    def __init__(self):
+        pass
+
+    def change_classes_by_id(self, annotation: Annotation, id_changes: Dict[int, int or None]) -> Annotation:
+        new_annotation = Annotation()
+        
+        for image_name in annotation.bounding_boxes.keys():
+            new_annotation.bounding_boxes[image_name] = []
+            bboxes = annotation.bounding_boxes[image_name]
+            for bbox in bboxes:
+                cls_id = bbox.get_class_id()
+                changed_cls_id = self.get_changed_class_id(cls_id, id_changes)
+
+                if changed_cls_id is None:
+                    continue
+                
+                bbox._class_id = changed_cls_id # CHECK
+                new_annotation.bounding_boxes[image_name].append(bbox)
+        
+        return new_annotation
+
+
+    def get_changed_class_id(self, class_id: int, id_changes: Dict[int, int or None]) -> int:
+        if class_id in id_changes.keys():
+            if id_changes[class_id] is None:
+                return None
+            else:
+                return id_changes[class_id]
+        return class_id
 
 
 class LabelEditor:
