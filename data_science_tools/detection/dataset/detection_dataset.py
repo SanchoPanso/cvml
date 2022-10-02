@@ -1,5 +1,4 @@
 import os
-from tkinter import image_names
 import cv2
 import random
 import math

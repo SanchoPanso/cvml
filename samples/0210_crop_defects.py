@@ -4,7 +4,7 @@ import sys
 import cv2
 import numpy as np
 
-sys.path.append(os.path.join(os.path.dirname(__file__)))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from data_science_tools.core.bounding_box import BoundingBox
 from data_science_tools.detection.dataset.annotation_converter import AnnotationConverter
@@ -12,15 +12,18 @@ from data_science_tools.detection.dataset.image_transforming import expo
 
 crop_counter = 1
 
-tmk_dir = r'F:\TMK'
-defect_dirs = [
-    os.path.join(tmk_dir, 'csv1_comets_23_08_2022'),
-    os.path.join(tmk_dir, 'csv1_comets_01_09_2022'),
-    os.path.join(tmk_dir, 'csv1_comets_05_09_2022'),
-]
+yolo_dataset_dir = '/home/student2/datasets/tmk_cvs3_yolov5_02102022'
+tmk_dir = '/home/student2/datasets/TMK_CVS3'
+defect_dirs = {
+    'tmk_1': os.path.join(tmk_dir, 'SVC3_defects TMK1'),
+    'tmk_2': os.path.join(tmk_dir, 'SVC3_defects TMK2'),
+    'tmk_3': os.path.join(tmk_dir, 'SVC3_defects TMK3'),
+    'tmk_4': os.path.join(tmk_dir, 'SVC3_defects TMK4'),
+    'tmk_5': os.path.join(tmk_dir, 'SVC3_defects TMK5'),
+}
 
 
-def get_masked_img(bbox: BoundingBox, final_img: np.ndarray, mask: np.ndarray) -> np.ndarray:
+def get_masked_img(bbox: BoundingBox, final_img: np.ndarray, mask: np.ndarray, defect_id: int) -> np.ndarray:
     xc, yc, w, h = bbox.get_relative_bounding_box()
     cls_id = bbox.get_class_id()
     
@@ -35,8 +38,8 @@ def get_masked_img(bbox: BoundingBox, final_img: np.ndarray, mask: np.ndarray) -
     h *= height
 
     xc, yc, w, h = map(int, [xc, yc, w, h])
-    padding_x = 0 # w // 3
-    padding_y = 0 # h // 3
+    padding_x = w // 4
+    padding_y = h // 4
 
     x1 = max(0, xc - w//2 - padding_x)
     x2 = min(width - 1, xc + w//2 + padding_x)
@@ -54,6 +57,7 @@ def crop_defects(images_dir: str,
                  polarization_dir: str,  
                  annotation_path: str, 
                  defect_id: int, 
+                 data_mark: str,
                  save_dir: str):
     
     global crop_counter
@@ -71,6 +75,11 @@ def crop_defects(images_dir: str,
         if img_name not in annotation_data.bounding_boxes.keys():
             print(img_name, 'is absent')
             continue
+
+        if not os.path.exists(os.path.join(yolo_dataset_dir, 'train', 'images', f'{img_name}_{data_mark}.jpg')):
+            print(img_name, 'not in train')
+            continue
+
         print(img_name)
 
         orig_img = cv2.imread(os.path.join(images_dir, img_name + ext))
@@ -92,7 +101,7 @@ def crop_defects(images_dir: str,
         ret, mask = cv2.threshold(mask_img, 1, 255, cv2.THRESH_BINARY)
 
         for bbox in annotation_data.bounding_boxes[img_name]:
-            masked_img = get_masked_img(bbox, final_img, mask)
+            masked_img = get_masked_img(bbox, final_img, mask, defect_id)
             if masked_img is not None:
                 cv2.imwrite(os.path.join(save_dir, f'{crop_counter}.jpg'), masked_img)
                 print(crop_counter)
@@ -100,7 +109,7 @@ def crop_defects(images_dir: str,
         
 
 if __name__ == '__main__':
-    save_dir = 'F:\\datasets\\0210_defect_crops'
+    save_dir = '/home/student2/datasets/0210_defect_crops'
     class_names = [
         'comet', 
         'other', 
@@ -118,11 +127,12 @@ if __name__ == '__main__':
 
     for defect_id in defect_ids:
         crop_counter = 1
-        for defect_dir in defect_dirs:
+        for key in defect_dirs.keys():
+            defect_dir = defect_dirs[key]
             images_dir = os.path.join(defect_dir, 'images')
-            polarization_dir = os.path.join(defect_dir, 'polarization')
+            polarization_dir = os.path.join(defect_dir, 'polar')
             annotation_path = os.path.join(defect_dir, 'annotations', 'instances_default.json')
-            crop_defects(images_dir, polarization_dir, annotation_path, defect_id, os.path.join(save_dir, class_names[defect_id]))
+            crop_defects(images_dir, polarization_dir, annotation_path, defect_id, key, os.path.join(save_dir, class_names[defect_id]))
 
 
 

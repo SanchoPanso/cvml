@@ -103,12 +103,13 @@ if __name__ == '__main__':
         }
         annotation_data = editor.change_classes_by_id(annotation_data, changes)
 
-        dataset.update(image_sources=image_sources,
-                       annotation_data=annotation_data)
+        dataset.update(image_sources, annotation_data)
         dataset.rename(renamer)
 
+        final_dataset += dataset
+
     result_dir = '/home/student2/datasets/tmk_cvs3_yolov5_02102022'
-    dataset.split_by_proportions({'train': 0.7, 'valid': 0.2, 'test': 0.1})
-    dataset.install(result_dir)
+    final_dataset.split_by_proportions({'train': 0.7, 'valid': 0.2, 'test': 0.1})
+    final_dataset.install(result_dir)
 
 
