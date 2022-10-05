@@ -6,9 +6,16 @@ from data_science_tools.core.bounding_box import BoundingBox, CoordinatesType
 
 
 class Annotation:
+    """
+    Representation of the detection annotation of some dataset.
+    """
     def __init__(self, 
                  classes: List[str] = None, 
                  bounding_boxes: Dict[str, List[BoundingBox]] = None):
+        """
+        :classes: list of class names
+        :bounding_boxes: dict with keys - image names and values - list of bounding boxes on this image
+        """
         
         self.classes = [] if classes is None else classes
         self.bounding_boxes = {} if bounding_boxes is None else bounding_boxes
@@ -19,42 +26,54 @@ class AnnotationConverter:
         pass
 
     def read_coco(self, path: str) -> Annotation:
+        """
+        :path: absolute path to json file with coco annotation
+        :return: annotation extracted from json file  
+        """
         with open(path) as f:
             input_data = json.load(f)
 
-        classes = self.get_classes_from_coco(input_data)
-        images = self.get_images_from_coco(input_data)
-        bboxes = self.get_bboxes_from_coco(input_data)
+        # Prepare special dicts of data
+        classes = self._get_classes_from_coco(input_data)
+        images = self._get_images_from_coco(input_data)
+        bboxes = self._get_bboxes_from_coco(input_data)
 
         bb_dict = {}
 
+        # For each image in coco create an empty list of bounding boxes
         for key in images.keys():
             file_name = images[key]['file_name']
             name, ext = os.path.splitext(file_name)
             bb_dict[name] = []
-
-        for i, bbox_id in enumerate(bboxes.keys()):
+        
+        # Each bbox in coco add to an appropriate list of bboxes
+        for bbox_id in bboxes.keys():
             bbox = self.get_bounding_box_from_coco_data(bbox_id, classes, images, bboxes)
             name = bbox.get_image_name()
             bb_dict[name].append(bbox)
 
+        # Create list of class names
         classes_list = ['' for key in classes.keys()]
         for key in classes.keys():
             cls_num = classes[key]['cls_num']
             classes_list[cls_num] = classes[key]['cls_name']
 
+        # Create instance of Annotation and return
         annotation = Annotation(classes_list, bb_dict)
         return annotation
 
-    def read_yolo(self, path: str) -> Annotation:
-        return Annotation()
-
     def write_coco(self, annotation: Annotation, path: str):
+        """
+        :annotation: annotation to convert
+        :path: absolute path for saving coco json  
+        """
         
-        categories = self.get_categories_from_annotation(annotation)
-        images = self.get_images_from_annotation(annotation)
-        annotations = self.get_bboxes_from_annotation(annotation)
+        # Get special dicts of coco-format from the specific annotation
+        categories = self._get_categories_from_annotation(annotation)
+        images = self._get_images_from_annotation(annotation)
+        annotations = self._get_bboxes_from_annotation(annotation)
 
+        # Create default coco data
         license = [{"name": "", "id": 0, "url": ""}]
         info = {"contributor": "", 
                 "date_created": "", 
@@ -63,6 +82,7 @@ class AnnotationConverter:
                 "version": "", 
                 "year": ""}
         
+        # Create coco dict and save
         coco = {
             'license': license,
             'info': info,
@@ -73,9 +93,30 @@ class AnnotationConverter:
 
         with open(path) as f:
             json.dump(coco, f)
+    
+    def read_bboxes(bboxes: List[BoundingBox], classes: List[str]) -> Annotation:
+        """
+        :bboxes: list of bounding boxes to convert into an annotation
+        :classes: list of class names
+        :return: converted annotation
+        """
 
+        bb_dict = {}
+        for bb in bboxes:
+            image_name = bb.get_image_name()
+            if image_name in bb_dict.keys():
+                bb_dict[image_name].append(bb)
+            else:
+                bb_dict[image_name] = [bb]
 
-    def get_classes_from_coco(self, coco_dict: dict) -> dict:
+        annotation = Annotation(classes, bb_dict)
+        return annotation
+    
+    def read_yolo(self, path: str) -> Annotation:
+        #TODO
+        return Annotation()
+
+    def _get_classes_from_coco(self, coco_dict: dict) -> dict:
         categories = coco_dict['categories']
         result = {}
         for cls_num in range(len(categories)):
@@ -87,7 +128,7 @@ class AnnotationConverter:
             }
         return result
 
-    def get_images_from_coco(self, coco_dict: dict) -> dict:
+    def _get_images_from_coco(self, coco_dict: dict) -> dict:
         images = coco_dict['images']
         result = {}
         for images_num in range(len(images)):
@@ -103,7 +144,7 @@ class AnnotationConverter:
             }
         return result
 
-    def get_bboxes_from_coco(self, coco_dict: dict) -> dict:
+    def _get_bboxes_from_coco(self, coco_dict: dict) -> dict:
         annotations = coco_dict['annotations']
         result = {}
         for bbox_num in range(len(annotations)):
@@ -141,7 +182,7 @@ class AnnotationConverter:
 
         return bounding_box
 
-    def get_categories_from_annotation(annotation: Annotation) -> dict:
+    def _get_categories_from_annotation(annotation: Annotation) -> dict:
         categories = []
         for i, cls in enumerate(annotation.classes):
             category = {
@@ -152,7 +193,7 @@ class AnnotationConverter:
             categories.append(category)
         return categories
 
-    def get_images_from_annotation(annotation: Annotation) -> dict:
+    def _get_images_from_annotation(annotation: Annotation) -> dict:
         
         images = []
         img_id_dict = {}
@@ -174,7 +215,7 @@ class AnnotationConverter:
             images.append(image)
         return images
     
-    def get_bboxes_from_annotation(annotation: Annotation) -> dict:
+    def _get_bboxes_from_annotation(annotation: Annotation) -> dict:
         annotations = []
         bbox_id = 1
         for i, image_name in enumerate(annotation.bounding_boxes.keys()):

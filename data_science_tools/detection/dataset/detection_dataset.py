@@ -7,6 +7,7 @@ from abc import ABC
 from typing import List, Set, Dict, Callable
 from enum import Enum
 
+from data_science_tools.core.bounding_box import BoundingBox
 from .io_handling import write_yolo_labels, read_yolo_labels
 from .extractor import Annotation
 from .image_sources import ImageSource
