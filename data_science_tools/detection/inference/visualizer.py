@@ -111,7 +111,7 @@ class Visualiser:
 
         cls_id = bbox.get_class_id()
         if bbox.get_bb_type() == BBType.GroundTruth:
-            label = classes[cls_id]
+            label = classes[int(cls_id)]
         else:
             label = '{0} {1:3f}'.format(classes[cls_id])
 
@@ -128,8 +128,8 @@ class Visualiser:
         r_Yin = y1 - th - int(thickness / 2)
         
         # Draw filled rectangle to put the text in it
-        cv2.rectangle(image, (r_Xin, r_Yin - thickness),
+        cv2.rectangle(img, (r_Xin, r_Yin - thickness),
                       (r_Xin + tw + thickness * 3, r_Yin + th + int(12.5 * fontScale)), (b, g, r),
                       -1)
-        cv2.putText(image, label, (xin_bb, yin_bb), font, fontScale, (0, 0, 0), fontThickness,
+        cv2.putText(img, label, (xin_bb, yin_bb), font, fontScale, (0, 0, 0), fontThickness,
                     cv2.LINE_AA)

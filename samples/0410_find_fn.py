@@ -5,44 +5,24 @@ from typing import List
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from data_science_tools.detection.inference_tools.visualizer import Visualiser
-from data_science_tools.detection.metrics.metrics_utils import BBType, CoordinatesType, BBFormat
-from data_science_tools.detection.metrics import BoundingBox, BoundingBoxes, Evaluator, get_bounding_boxes_from_dir
-from data_science_tools.detection.dataset_tools.io_handling import read_yolo_labels
+from data_science_tools.core.bounding_box import BoundingBox, BBType
+from data_science_tools.detection.inference.visualizer import Visualiser
+from data_science_tools.detection.metrics import Evaluator, get_bounding_boxes_from_dir
+from data_science_tools.detection.dataset.io_handling import read_yolo_labels
 
 
 IMG_SIZE = (2448, 2048)
 
 
-def get_bboxes_from_file(img_size: tuple, txt_file: str, bb_type: BBType) -> BoundingBoxes:
+def get_bboxes_from_file(img_size: tuple, txt_file: str, bb_type: BBType) -> List[BoundingBox]:
     img_name, ext = os.path.splitext(txt_file)
-    labels = read_yolo_labels(txt_file)
-    bounding_boxes = BoundingBoxes()
-
-    for line in labels:
-        if bb_type == BBType.GroundTruth:
-            cls_id, x, y, w, h = line[:5]
-            bbox = BoundingBox(img_name, cls_id,
-                               x, y, w, h,
-                               CoordinatesType.Relative, img_size,
-                               bb_type,
-                               format=BBFormat.XYWH)
-        else:
-            cls_id, x, y, w, h, cls_conf = line
-            bbox = BoundingBox(img_name, cls_id,
-                               x, y, w, h,
-                               CoordinatesType.Relative, img_size,
-                               bb_type,
-                               cls_conf,
-                               format=BBFormat.XYWH)
-
-        bounding_boxes.addBoundingBox(bbox)
-    return bounding_boxes
+    bboxes = read_yolo_labels(txt_file)
+    return bboxes
     
 
-def get_fp_bboxes(det_bboxes: BoundingBoxes, 
-                  gt_bboxes: BoundingBoxes,
-                  IOUThreshold: float = 0.2,
+def get_fp_bboxes(det_bboxes: List[BoundingBox], 
+                  gt_bboxes: List[BoundingBox],
+                  IOUThreshold: float = 0.25,
                   class_id: int = 0) -> List[BoundingBox]:
     
     evaluator = Evaluator()
@@ -143,7 +123,7 @@ def save_det_crops(images_dir, gt_dir, det_dir, save_dir):
     bb_list = metrics[0][data_type]
     bb_dict = {}
     for bb in bb_list:
-        image_name = bb.getImageName()
+        image_name = bb.get_image_name()
         if image_name in bb_dict.keys():
             bb_dict[image_name].append(bb)
         else:
@@ -157,27 +137,26 @@ def save_det_crops(images_dir, gt_dir, det_dir, save_dir):
         img = cv2.imread(os.path.join(images_dir, image_name + '.jpg'))
         img = cv2.merge([cv2.split(img)[2]] * 3)
 
-        for bb in bb_dict[image_name]:
-            
-            cls_id = bb.getClassId()
-            
-            x, y, w, h = bb.getAbsoluteBoundingBox()
-            conf = bb.getConfidence()
-            color = (0, 0, 255)
-            description = 'comet {0:.3f}'.format(conf)
-            vis.draw_bbox(img, x, y, w, h, color, description)
-        
         classes = ['comet', 'other', 'joint', 'number', 'tube', 'sink', 'birdhouse', 'print']
+
         for i in range(len(metrics)):
             for bb in metrics[i]['gt_list']:
-                if image_name != bb.getImageName():
+                if image_name != bb.get_image_name():
                     continue
 
-                x, y, w, h = bb.getAbsoluteBoundingBox()
+                # x, y, w, h = bb.getAbsoluteBoundingBox()
                 color = (0, 255, 0)
-                description = classes[int(bb.getClassId())]
-                vis.draw_bbox(img, x, y, w, h, color, description)
-
+                # description = classes[int(bb.getClassId())]
+                vis.draw_bbox(img, bb, classes, color)
+        for bb in bb_dict[image_name]:
+            
+            cls_id = bb.get_class_id()
+            
+            # x, y, w, h = bb.getAbsoluteBoundingBox()
+            # conf = bb.getConfidence()
+            color = (255, 0, 0)
+            # description = 'comet {0:.3f}'.format(conf)
+            vis.draw_bbox(img, bb, classes, color, thickness=5) 
         
         
         cv2.imwrite(os.path.join(save_dir, image_name + '.jpg'), img)

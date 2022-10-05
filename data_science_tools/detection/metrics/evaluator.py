@@ -50,22 +50,22 @@ class Evaluator:
         # Loop through all bounding boxes and separate them into GTs and detections
         for bb in boundingboxes:
             # [imageName, class, confidence, (bb coordinates XYX2Y2)]
-            if bb.getBBType() == BBType.GroundTruth:
+            if bb.get_bb_type() == BBType.GroundTruth:
                 groundTruths.append([
-                    bb.getImageName(),
-                    bb.getClassId(), 1,
-                    bb.getAbsoluteBoundingBox(BBFormat.XYX2Y2)
+                    bb.get_image_name(),
+                    bb.get_class_id(), 1,
+                    bb.get_absolute_bounding_box(BBFormat.XYX2Y2)
                 ])
             else:
                 detections.append([
-                    bb.getImageName(),
-                    bb.getClassId(),
-                    bb.getConfidence(),
-                    bb.getAbsoluteBoundingBox(BBFormat.XYX2Y2)
+                    bb.get_image_name(),
+                    bb.get_class_id(),
+                    bb.get_confidence(),
+                    bb.get_absolute_bounding_box(BBFormat.XYX2Y2)
                 ])
             # get class
-            if bb.getClassId() not in classes:
-                classes.append(bb.getClassId())
+            if bb.get_class_id() not in classes:
+                classes.append(bb.get_class_id())
         classes = sorted(classes)
         # Precision x Recall is obtained individually by each class
         # Loop through by classes
@@ -102,12 +102,11 @@ class Evaluator:
                 tp_gt_idx[key] = set()
                 for i in range(len(gts[key])):
                     image_name, class_id, confidence, bb_xyx2y2 = gts[key][i]
-                    gt_list.append(BoundingBox(image_name,
-                                                class_id,
+                    gt_list.append(BoundingBox(class_id,
                                                 bb_xyx2y2[0], bb_xyx2y2[1],
                                                 bb_xyx2y2[2] - bb_xyx2y2[0],
                                                 bb_xyx2y2[3] - bb_xyx2y2[1],
-                                                classConfidence=confidence))
+                                                confidence, image_name))
             
             
             # print("Evaluating class: %s (%d detections)" % (str(c), len(dects)))
@@ -132,12 +131,11 @@ class Evaluator:
                         # CUSTOM INSERT
                         tp_gt_idx[dects[d][0]].add(jmax)
                         image_name, class_id, confidence, bb_xyx2y2 = dects[d]
-                        tp_list.append(BoundingBox(image_name,
-                                                   class_id,
+                        tp_list.append(BoundingBox(class_id,
                                                    bb_xyx2y2[0], bb_xyx2y2[1],
                                                    bb_xyx2y2[2] - bb_xyx2y2[0],
                                                    bb_xyx2y2[3] - bb_xyx2y2[1],
-                                                   classConfidence=confidence))
+                                                   confidence, image_name))
 
                         TP[d] = 1  # count as true positive
                         det[dects[d][0]][jmax] = 1  # flag as already 'seen'
@@ -146,12 +144,11 @@ class Evaluator:
 
                         # CUSTOM INSERT
                         image_name, class_id, confidence, bb_xyx2y2 = dects[d]
-                        fp_list.append(BoundingBox(image_name,
-                                                   class_id,
+                        fp_list.append(BoundingBox(class_id,
                                                    bb_xyx2y2[0], bb_xyx2y2[1],
                                                    bb_xyx2y2[2] - bb_xyx2y2[0],
                                                    bb_xyx2y2[3] - bb_xyx2y2[1],
-                                                   classConfidence=confidence))
+                                                   confidence, image_name))
 
                         FP[d] = 1  # count as false positive
                         # print("FP")
@@ -160,12 +157,11 @@ class Evaluator:
 
                     # CUSTOM INSERT
                     image_name, class_id, confidence, bb_xyx2y2 = dects[d]
-                    fp_list.append(BoundingBox(image_name,
-                                               class_id,
+                    fp_list.append(BoundingBox(class_id,
                                                bb_xyx2y2[0], bb_xyx2y2[1],
                                                bb_xyx2y2[2] - bb_xyx2y2[0],
                                                bb_xyx2y2[3] - bb_xyx2y2[1],
-                                               classConfidence=confidence))
+                                               confidence, image_name))
 
                     FP[d] = 1  # count as false positive
                     # print("FP")
@@ -175,12 +171,12 @@ class Evaluator:
                 for i in range(len(gts[key])):
                     if i not in tp_gt_idx[key]:
                         image_name, class_id, confidence, bb_xyx2y2 = gts[key][i]
-                        fn_list.append(BoundingBox(image_name,
+                        fn_list.append(BoundingBox(
                                             class_id,
                                             bb_xyx2y2[0], bb_xyx2y2[1],
                                             bb_xyx2y2[2] - bb_xyx2y2[0],
                                             bb_xyx2y2[3] - bb_xyx2y2[1],
-                                            classConfidence=confidence))
+                                            confidence, image_name))
                     
             # compute precision, recall and average precision
             acc_FP = np.cumsum(FP)
