@@ -7,7 +7,7 @@ from typing import Callable
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from data_science_tools.detection.dataset.detection_dataset import DetectionDataset
+from data_science_tools.detection.dataset.detection_dataset import DetectionDataset, LabeledImage
 from data_science_tools.detection.dataset.annotation_converter import AnnotationConverter
 from data_science_tools.detection.dataset.label_editor import AnnotationEditor
 
@@ -109,7 +109,16 @@ if __name__ == '__main__':
         final_dataset += dataset
 
     result_dir = '/home/student2/datasets/tmk_cvs3_yolov5_02102022'
-    final_dataset.split_by_proportions({'train': 0.7, 'valid': 0.2, 'test': 0.1})
-    final_dataset.install(result_dir)
+    # final_dataset.split_by_proportions({'train': 0.7, 'valid': 0.2, 'test': 0.1})
+    final_dataset.split_by_dataset(result_dir)
+    for idx in final_dataset.splits['valid']:
+        lbl_img = final_dataset[idx]
+        bboxes = lbl_img.labels
+        name = lbl_img.name
+        for bb in bboxes:
+            if bb.get_class_id() == 10:
+                print(name)
+    
+    # final_dataset.install(result_dir)
 
 
