@@ -3,7 +3,7 @@ import shutil
 import random
 from typing import Callable
 
-from ..data_science_tools.detection.dataset.io_label_handler import IOLabelHandler
+from ..cvml.detection.dataset.io_label_handler import IOLabelHandler
 
 from torch.utils.data import Dataset
 

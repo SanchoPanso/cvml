@@ -7,11 +7,11 @@ from typing import Callable
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from data_science_tools.detection.dataset.detection_dataset import DetectionDataset
-from data_science_tools.detection.dataset.extractor import AnnotationExtractor, Annotation
-from data_science_tools.detection.dataset.annotation_converter import AnnotationConverter
-from data_science_tools.detection.dataset.image_transforming import expo
-from data_science_tools.detection.dataset.image_sources import convert_paths_to_sources
+from cvml.detection.dataset.detection_dataset import DetectionDataset
+from cvml.detection.dataset.extractor import AnnotationExtractor, Annotation
+from cvml.detection.dataset.annotation_converter import AnnotationConverter
+from cvml.detection.dataset.image_transforming import expo
+from cvml.detection.dataset.image_sources import convert_paths_to_sources
 
 tmk_dir = r'D:\TMK'
 

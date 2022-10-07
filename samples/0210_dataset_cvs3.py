@@ -7,12 +7,12 @@ from typing import Callable
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from data_science_tools.detection.dataset.detection_dataset import DetectionDataset, LabeledImage
-from data_science_tools.detection.dataset.annotation_converter import AnnotationConverter
-from data_science_tools.detection.dataset.label_editor import AnnotationEditor
+from cvml.detection.dataset.detection_dataset import DetectionDataset, LabeledImage
+from cvml.detection.dataset.annotation_converter import AnnotationConverter
+from cvml.detection.dataset.label_editor import AnnotationEditor
 
-from data_science_tools.detection.dataset.image_transforming import expo
-from data_science_tools.detection.dataset.image_sources import convert_paths_to_sources
+from cvml.detection.dataset.image_transforming import expo
+from cvml.detection.dataset.image_sources import convert_paths_to_sources
 
 source_dir = '/home/student2/datasets/TMK_CVS3'
 

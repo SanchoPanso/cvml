@@ -3,8 +3,8 @@ import sys
 import glob
 from typing import List
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-from data_science_tools.core.bounding_box import BBType, BBFormat, CoordinatesType, BoundingBox
-from data_science_tools.detection.dataset.io_handling import read_yolo_labels
+from cvml.core.bounding_box import BBType, BBFormat, CoordinatesType, BoundingBox
+from cvml.detection.dataset.io_handling import read_yolo_labels
 
 # IMG_SIZE = (2448, 2048)
 

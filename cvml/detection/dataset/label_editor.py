@@ -1,7 +1,7 @@
 import os
 from typing import List, Dict
-from data_science_tools.core.bounding_box import BoundingBox
-from data_science_tools.detection.dataset.annotation_converter import Annotation
+from cvml.core.bounding_box import BoundingBox
+from cvml.detection.dataset.annotation_converter import Annotation
 
 
 class AnnotationEditor:

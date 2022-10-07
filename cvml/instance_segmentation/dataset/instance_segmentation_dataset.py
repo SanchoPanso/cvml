@@ -8,11 +8,11 @@ from abc import ABC
 from typing import List, Set, Dict, Callable
 from enum import Enum
 
-from data_science_tools.core.bounding_box import BoundingBox
-from data_science_tools.core.annotation import Annotation
-from data_science_tools.detection.dataset.annotation_converter import AnnotationConverter
-from data_science_tools.detection.dataset.detection_dataset import DetectionDataset, LabeledImage
-from data_science_tools.detection.dataset.image_sources import ImageSource, MultipleImageSource
+from cvml.core.bounding_box import BoundingBox
+from cvml.core.annotation import Annotation
+from cvml.detection.dataset.annotation_converter import AnnotationConverter
+from cvml.detection.dataset.detection_dataset import DetectionDataset, LabeledImage
+from cvml.detection.dataset.image_sources import ImageSource, MultipleImageSource
 
 
 def convert_mask_to_coco_rle(color_mask: np.ndarray, bbox: BoundingBox) -> dict:

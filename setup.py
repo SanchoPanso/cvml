@@ -2,7 +2,7 @@
 import io
 import os
 from setuptools import find_packages, setup
-from .data_science_tools import __version__
+from .cvml import __version__
 
 
 def read(*paths, **kwargs):
@@ -31,7 +31,7 @@ def read_requirements(path):
 
 
 setup(
-    name="data_science_tools",
+    name="cvml",
     version=__version__,
     description="Library for some data science tasks, linked with computer vision",
     url="https://github.com/SanchoPanso/DataScienceTools",

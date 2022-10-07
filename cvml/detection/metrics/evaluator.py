@@ -6,7 +6,7 @@ from typing import List
 import matplotlib.pyplot as plt
 import numpy as np
 
-from data_science_tools.core.bounding_box import BoundingBox, BBType, BBFormat
+from cvml.core.bounding_box import BoundingBox, BBType, BBFormat
 from .metrics_utils import MethodAveragePrecision
 
 

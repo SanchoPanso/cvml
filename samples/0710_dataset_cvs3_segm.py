@@ -7,11 +7,11 @@ from typing import Callable, List
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from data_science_tools.instance_segmentation.dataset.instance_segmentation_dataset import ISDataset, ISImageSource
-from data_science_tools.detection.dataset.annotation_converter import AnnotationConverter
-from data_science_tools.detection.dataset.label_editor import AnnotationEditor
+from cvml.instance_segmentation.dataset.instance_segmentation_dataset import ISDataset, ISImageSource
+from cvml.detection.dataset.annotation_converter import AnnotationConverter
+from cvml.detection.dataset.label_editor import AnnotationEditor
 
-from data_science_tools.detection.dataset.image_transforming import expo
+from cvml.detection.dataset.image_transforming import expo
 
 source_dir = '/home/student2/datasets/TMK_CVS3'
 

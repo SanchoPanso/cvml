@@ -2,8 +2,8 @@ import os
 import json
 from typing import Callable, List, Dict
 
-from data_science_tools.core.bounding_box import BoundingBox, CoordinatesType
-from data_science_tools.detection.dataset.io_handling import read_yolo_labels
+from cvml.core.bounding_box import BoundingBox, CoordinatesType
+from cvml.detection.dataset.io_handling import read_yolo_labels
 
 
 class Annotation:

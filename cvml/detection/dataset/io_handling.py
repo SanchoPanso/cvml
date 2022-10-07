@@ -1,6 +1,6 @@
 import os
 from typing import List
-from data_science_tools.core.bounding_box import BoundingBox, CoordinatesType
+from cvml.core.bounding_box import BoundingBox, CoordinatesType
 
 
 def read_yolo_labels(path: str, img_size: tuple) -> List[BoundingBox]:

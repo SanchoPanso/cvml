@@ -7,7 +7,7 @@ import albumentations as albu
 import segmentation_models_pytorch as smp
 from segmentation_models_pytorch.utils.losses import DiceLoss
 
-from data_science_tools.core.segmenter import Segmenter
+from cvml.core.segmenter import Segmenter
 
 
 class UnetSegmentator(Segmenter):

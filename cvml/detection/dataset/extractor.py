@@ -2,7 +2,7 @@ import os
 import json
 from typing import Callable, List, Dict
 
-from data_science_tools.core.bounding_box import BoundingBox, CoordinatesType
+from cvml.core.bounding_box import BoundingBox, CoordinatesType
 
 
 class Annotation:

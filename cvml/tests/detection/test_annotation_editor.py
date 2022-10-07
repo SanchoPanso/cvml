@@ -4,8 +4,8 @@ import pytest
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
 
-from data_science_tools.core.bounding_box import BoundingBox
-from data_science_tools.detection.dataset.label_editor import AnnotationEditor, Annotation
+from cvml.core.bounding_box import BoundingBox
+from cvml.detection.dataset.label_editor import AnnotationEditor, Annotation
 
 
 def test_change_classes_by_id():

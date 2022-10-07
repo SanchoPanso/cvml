@@ -5,10 +5,10 @@ from typing import List
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from data_science_tools.core.bounding_box import BoundingBox, BBType
-from data_science_tools.detection.inference.visualizer import Visualiser
-from data_science_tools.detection.metrics import Evaluator, get_bounding_boxes_from_dir
-from data_science_tools.detection.dataset.io_handling import read_yolo_labels
+from cvml.core.bounding_box import BoundingBox, BBType
+from cvml.detection.inference.visualizer import Visualiser
+from cvml.detection.metrics import Evaluator, get_bounding_boxes_from_dir
+from cvml.detection.dataset.io_handling import read_yolo_labels
 
 
 IMG_SIZE = (2448, 2048)
