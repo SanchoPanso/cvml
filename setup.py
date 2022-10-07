@@ -2,7 +2,7 @@
 import io
 import os
 from setuptools import find_packages, setup
-from .cvml import __version__
+from cvml import __version__
 
 
 def read(*paths, **kwargs):
@@ -33,12 +33,12 @@ def read_requirements(path):
 setup(
     name="cvml",
     version=__version__,
-    description="Library for some data science tasks, linked with computer vision",
+    description="Computer Vision's Machine Learning",
     url="https://github.com/SanchoPanso/DataScienceTools",
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
     author="SanchoPanso",
-    packages=find_packages(), #find_packages(exclude=["tests", ".github"]),
+    packages=find_packages(exclude=["tests", ".github"]),
     install_requires=read_requirements("requirements.txt"),
     # entry_points={
     #     "console_scripts": ["project_name = project_name.__main__:main"]
