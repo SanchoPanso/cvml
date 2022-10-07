@@ -3,6 +3,7 @@ import json
 from typing import Callable, List, Dict
 
 from data_science_tools.core.bounding_box import BoundingBox, CoordinatesType
+from data_science_tools.detection.dataset.io_handling import read_yolo_labels
 
 
 class Annotation:
@@ -112,9 +113,33 @@ class AnnotationConverter:
         annotation = Annotation(classes, bb_dict)
         return annotation
     
-    def read_yolo(self, path: str) -> Annotation:
-        #TODO
-        return Annotation()
+    def read_yolo(self, path: str, classes: List[str] = None, data_yaml_path: str = None) -> Annotation:
+        """
+        :path: absolute path to labels dir with txt-files of yolo annotation
+        :classes: list of class names
+        :data_yaml_path: path to data.yaml in yolo dataset
+        :return: annotation extracted from these files  
+        """
+        max_cls_id = -1
+        txt_files = os.listdir(path) 
+
+        bb_dict = {}
+        # For each image in coco create an empty list of bounding boxes
+        for file in txt_files:
+            name, ext = os.path.splitext(file)
+            bboxes = read_yolo_labels(os.path.join(path, file))
+
+            for bb in bboxes:
+                max_cls_id = max(max_cls_id, bb.get_class_id())
+            bb_dict[name] = bboxes
+        
+        if classes is not None:
+            pass # TODO
+        else:
+            classes = [str(i) for i in range(int(max_cls_id + 1))]
+        
+        annotation = Annotation(classes, bb_dict)
+        return annotation
 
     def _get_classes_from_coco(self, coco_dict: dict) -> dict:
         categories = coco_dict['categories']

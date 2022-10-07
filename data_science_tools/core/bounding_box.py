@@ -79,7 +79,8 @@ class BoundingBox:
                  type_coordinates: CoordinatesType = CoordinatesType.Absolute,
                  img_size: tuple = None,
                  bb_type: BBType = BBType.GroundTruth,
-                 format: BBFormat = BBFormat.XYWH):
+                 format: BBFormat = BBFormat.XYWH,
+                 segmetation: dict = None):
         """Constructor.
         Args:
             image_name: String representing the image name.
@@ -152,6 +153,8 @@ class BoundingBox:
         else:
             self._width_img = img_size[0]
             self._height_img = img_size[1]
+        
+        self._segmentation = segmetation
 
     def __str__(self):
         return f"BoundingBox(class_id = {self._class_id}, x = {self._x}, y = {self._y}, w = {self._w}, h = {self._h})"
@@ -173,6 +176,9 @@ class BoundingBox:
             return convertToRelativeValues((self._width_img, self._height_img),
                                            (self._x, self._x2, self._y, self._y2))
 
+    def get_segmentation(self):
+        return self._segmentation
+
     def get_image_name(self):
         return self._image_name
 
@@ -193,6 +199,9 @@ class BoundingBox:
 
     def get_bb_type(self):
         return self._bb_type
+
+    def set_segmentation(self, segmentation):
+        self._segmentation = segmentation
 
     @staticmethod
     def compare(det1, det2):
