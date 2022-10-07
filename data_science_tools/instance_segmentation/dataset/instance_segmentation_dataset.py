@@ -8,72 +8,38 @@ from typing import List, Set, Dict, Callable
 from enum import Enum
 
 from data_science_tools.core.bounding_box import BoundingBox
-from .extractor import Annotation
-from .image_sources import ImageSource
+from data_science_tools.core.annotation import Annotation
+from data_science_tools.detection.dataset.detection_dataset import DetectionDataset, LabeledImage
+from data_science_tools.detection.dataset.image_sources import ImageSource
 
 
-class ISLabeledImage:
+class ISLabeledImage(LabeledImage):
     def __init__(self,
-                 image_source: ImageSource,
-                 labels: List[List[float]] = None,
-                 polygons: List[List[List[float]]] = None,
+                 image_source: ImageSource = None,
+                 bboxes: List[BoundingBox] = None,
+                 segmentation: List[List[List[float]]] = None,
                  name: str = None):
+        
+        super(ISLabeledImage, self).__init__(image_source, bboxes, name)
+        self.segmentation = segmentation or []
 
-        self.image_source = image_source
-        self.labels = labels or []
-        self.polygons = polygons or []
-        self.name = name or image_source.get_name()
-
-    def save(self, images_dir: str = None, labels_dir: str = None):
-        if images_dir is not None:
+    def save(self, images_dir: str = None):
+        if images_dir is not None and self.image_source is not None:
             self.image_source.save_to(os.path.join(images_dir, self.name + '.jpg'))
 
-        if labels_dir is not None:
-            #TODO
-            # write_yolo_labels(os.path.join(labels_dir, self.name + '.txt'),
-            #                   self.labels)
-            pass
 
 
-class ISDataset:
+class ISDataset(DetectionDataset):
     """
     Class of dataset, representing sets of labeled images with bounding boxes, 
-    which are used in detection tasks.
+    which are used in instance segmentation tasks.
     """
 
-    def __init__(self, 
-                 labeled_images: List[ISLabeledImage] = None, 
+    def __init__(self,
+                 labeled_images: List[LabeledImage] = None, 
                  splits: Dict[str, List[int]] = None):
-        """
-        :labeled_images: list of labeled images
-        :splits: dict of lists of labeled images' indexes, which related to specific split
-                 (for example, {'train': [1, 2, 3, 4, 5], 'valid': [6, 7], 'test': [8]})
-        """
-        self.labeled_images = labeled_images or []
-        self.splits = splits or {}
-
-    def __len__(self):
-        return len(self.labeled_images)
-
-    def __getitem__(self, item):
-        return self.labeled_images[item]
-
-    def __add__(self, other):
-        sum_labeled_images = self.labeled_images + other.labeled_images
         
-        self_split_names = set(self.splits.keys())
-        other_split_names = set(other.splits.keys())
-        sum_split_names = self_split_names or other_split_names
-        sum_splits = {}
-        
-        for name in sum_split_names:
-            sum_splits[name] = []
-            if name in self_split_names:
-                sum_splits[name] += self.splits[name]
-            if name in other_split_names:
-                sum_splits[name] += list(map(lambda x: x + len(self), other.splits[name]))
-        
-        return DetectionDataset(sum_labeled_images, sum_splits)
+        super(ISDataset, self).__init__(labeled_images, splits)
 
     def update(self, image_sources: List[ImageSource] = None,
                annotation: Annotation = None):
@@ -90,31 +56,6 @@ class ISDataset:
 
             labeled_image = LabeledImage(image_source, labels, source_name)
             self.labeled_images.append(labeled_image)
-    
-    def rename(self, rename_callback: Callable):
-        for i in range(len(self.labeled_images)):
-            self.labeled_images[i].name = rename_callback(self.labeled_images[i].name)
-
-    def split_by_proportions(self, proportions: dict):
-        all_idx = [i for i in range(len(self.labeled_images))]
-        random.shuffle(all_idx)
-
-        length = len(self.labeled_images)
-        split_start_idx = 0
-        split_end_idx = 0
-
-        # Reset current split indexes
-        self.splits = {}
-
-        num_of_names = len(proportions.keys())
-
-        for i, split_name in enumerate(proportions.keys()):
-            split_end_idx += math.ceil(proportions[split_name] * length)
-            self.splits[split_name] = all_idx[split_start_idx: split_end_idx]
-            split_start_idx = split_end_idx
-
-            if i + 1 == num_of_names and split_end_idx < len(all_idx):
-                self.splits[split_name] += all_idx[split_end_idx: len(all_idx)]
 
     def split_by_dataset(self, yolo_dataset_path: str):
 
@@ -157,19 +98,6 @@ class ISDataset:
                 images_dir = images_dir if install_images else None
                 labels_dir = labels_dir if install_labels else None
                 self.labeled_images[i].save(images_dir, labels_dir)
-    
-    def exclude_by_names(self, excluding_names: Set[str], splits: List[str]):
-        
-        for split in splits:
-            for i in range(len(self.splits[split]) - 1, -1, -1):
-                idx = self.splits[split][i]
-                labeled_image = self.labeled_images[idx]
-                new_name = labeled_image.name
-
-                if new_name in excluding_names:
-                    self.splits[split].pop(i)
-        
-
 
 
 

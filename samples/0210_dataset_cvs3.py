@@ -113,7 +113,7 @@ if __name__ == '__main__':
     final_dataset.split_by_dataset(result_dir)
     for idx in final_dataset.splits['valid']:
         lbl_img = final_dataset[idx]
-        bboxes = lbl_img.labels
+        bboxes = lbl_img.bboxes
         name = lbl_img.name
         for bb in bboxes:
             if bb.get_class_id() == 10:

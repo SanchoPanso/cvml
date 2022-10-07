@@ -15,21 +15,21 @@ from .image_sources import ImageSource
 
 class LabeledImage:
     def __init__(self,
-                 image_source: ImageSource,
-                 labels: List[List[float]] = None,
+                 image_source: ImageSource = None,
+                 bboxes: List[BoundingBox] = None,
                  name: str = None):
 
         self.image_source = image_source
-        self.labels = labels or []
+        self.bboxes = bboxes or []
         self.name = name or image_source.get_name()
 
     def save(self, images_dir: str = None, labels_dir: str = None):
-        if images_dir is not None:
+        if images_dir is not None and self.image_source is not None:
             self.image_source.save_to(os.path.join(images_dir, self.name + '.jpg'))
 
         if labels_dir is not None:
             write_yolo_labels(os.path.join(labels_dir, self.name + '.txt'),
-                              self.labels)
+                              self.bboxes)
 
 
 class DetectionDataset:
