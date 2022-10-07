@@ -92,10 +92,10 @@ class AnnotationConverter:
             'annotations': annotations, 
         }
 
-        with open(path) as f:
+        with open(path, 'w') as f:
             json.dump(coco, f)
     
-    def read_bboxes(bboxes: List[BoundingBox], classes: List[str]) -> Annotation:
+    def read_bboxes(self, bboxes: List[BoundingBox], classes: List[str]) -> Annotation:
         """
         :bboxes: list of bounding boxes to convert into an annotation
         :classes: list of class names
@@ -207,7 +207,7 @@ class AnnotationConverter:
 
         return bounding_box
 
-    def _get_categories_from_annotation(annotation: Annotation) -> dict:
+    def _get_categories_from_annotation(self, annotation: Annotation) -> dict:
         categories = []
         for i, cls in enumerate(annotation.classes):
             category = {
@@ -218,7 +218,7 @@ class AnnotationConverter:
             categories.append(category)
         return categories
 
-    def _get_images_from_annotation(annotation: Annotation) -> dict:
+    def _get_images_from_annotation(self, annotation: Annotation) -> dict:
         
         images = []
         img_id_dict = {}
@@ -231,7 +231,7 @@ class AnnotationConverter:
                 "id": img_id, 
                 "width": 2448, 
                 "height": 2048, 
-                "file_name": image_name, # CHECK 
+                "file_name": image_name + '.jpg', # REDO
                 "license": 0, 
                 "flickr_url": "", 
                 "coco_url": "", 
@@ -240,8 +240,8 @@ class AnnotationConverter:
             images.append(image)
         return images
     
-    def _get_bboxes_from_annotation(annotation: Annotation) -> dict:
-        annotations = []
+    def _get_bboxes_from_annotation(self, annotation: Annotation) -> dict:
+        coco_annotations = []
         bbox_id = 1
         for i, image_name in enumerate(annotation.bounding_boxes.keys()):
             if len(annotation.bounding_boxes[image_name]) == 0:
@@ -251,7 +251,7 @@ class AnnotationConverter:
                 x, y, w, h = bbox.get_absolute_bounding_box()
                 cls_id = bbox.get_class_id()
                 segmentation = bbox.get_segmentation()
-                annotation = {
+                coco_annotation = {
                     "id": bbox_id, 
                     "image_id": img_id, 
                     "category_id": cls_id + 1, 
@@ -262,7 +262,8 @@ class AnnotationConverter:
                     "attributes*": {"occluded": False, "rotation": 0.0}
                 }
                 bbox_id += 1
-                annotations.append(annotation)
+                coco_annotations.append(coco_annotation)
+        return coco_annotations
 
     
 

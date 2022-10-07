@@ -91,6 +91,8 @@ class DetectionDataset:
     def rename(self, rename_callback: Callable):
         for i in range(len(self.labeled_images)):
             self.labeled_images[i].name = rename_callback(self.labeled_images[i].name)
+            for bb in self.labeled_images[i].bboxes:
+                bb._image_name = rename_callback(bb._image_name)
 
     def split_by_proportions(self, proportions: dict):
         all_idx = [i for i in range(len(self.labeled_images))]

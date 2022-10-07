@@ -3,6 +3,7 @@ import cv2
 import random
 import math
 import numpy as np
+from itertools import groupby
 from abc import ABC
 from typing import List, Set, Dict, Callable
 from enum import Enum
@@ -15,31 +16,37 @@ from data_science_tools.detection.dataset.image_sources import ImageSource, Mult
 
 
 def convert_mask_to_coco_rle(color_mask: np.ndarray, bbox: BoundingBox) -> dict:
-    x, y, w, h = bbox.get_absolute_bounding_box()
-    obj_crop = color_mask[y: y + h, x: x + w]
-    obj_crop = cv2.cvtColor(obj_crop, cv2.COLOR_BGR2GRAY)
-    binary_obj_crop = cv2.threshold(obj_crop, 1, 255, cv2.THRESH_BINARY)
-
+    x, y, w, h = map(int, bbox.get_absolute_bounding_box())
     width, height = color_mask.shape[:2]
-    submask = np.zeros((height, width), dtype='uint8')
-    submask[y: y + h, x: x + w] = binary_obj_crop
 
-    counts = []
-    count = 0
-    state = 0
-    for x in range(width):
-        for y in range(height):
-            if submask[y][x] == state:
-                count += 1
-            else:
-                counts.append(count)
-                count = 1
-                state = submask[y][x]
-    
     rle = {
         'size': [width, height],
-        'counts': counts,
+        'counts': [],
     }
+
+    x = min(x, width)
+    y = min(y, height)
+    w = min(w, width - x)
+    h = min(h, height - y)
+
+    if w == 0 or h == 0:
+        return rle
+
+    obj_crop = color_mask[y: y + h, x: x + w]
+    obj_crop = cv2.cvtColor(obj_crop, cv2.COLOR_BGR2GRAY)
+    ret, binary_obj_crop = cv2.threshold(obj_crop, 1, 255, cv2.THRESH_BINARY)
+
+    binary_mask = np.zeros((height, width), dtype='uint8')
+    binary_mask[y: y + h, x: x + w] = binary_obj_crop
+
+    counts = []
+
+    for i, (value, elements) in enumerate(groupby(binary_mask.ravel(order='F'))):
+        if i == 0 and value == 1:
+            counts.append(0)
+        counts.append(len(list(elements)))
+    
+    rle['counts'] = counts
 
     return rle
 
@@ -79,12 +86,34 @@ class ISDataset(DetectionDataset):
                  splits: Dict[str, List[int]] = None):
         
         super(ISDataset, self).__init__(labeled_images, splits)
+        self.classes = []
+    
+    def __add__(self, other):
+        sum_labeled_images = self.labeled_images + other.labeled_images
+        sum_classes = self.classes
+        
+        self_split_names = set(self.splits.keys())
+        other_split_names = set(other.splits.keys())
+        sum_split_names = self_split_names or other_split_names
+        sum_splits = {}
+        
+        for name in sum_split_names:
+            sum_splits[name] = []
+            if name in self_split_names:
+                sum_splits[name] += self.splits[name]
+            if name in other_split_names:
+                sum_splits[name] += list(map(lambda x: x + len(self), other.splits[name]))
+        
+        dataset = ISDataset(sum_labeled_images, sum_splits)
+        dataset.classes = sum_classes
+        return dataset
 
     def update(self, image_sources: List[ISImageSource] = None,
                annotation: Annotation = None):
         
         image_sources = image_sources or []
         annotation = annotation or Annotation()
+        self.classes = annotation.classes
 
         for image_source in image_sources:
             source_name = image_source.get_name()
@@ -95,12 +124,14 @@ class ISDataset(DetectionDataset):
             
             # add segmentation
             color_mask = image_source.get_color_mask()
-            for bbox in labels:
-                rle = convert_mask_to_coco_rle(color_mask, bbox)
-                bbox.set_segmentation(rle)
+            if color_mask is not None:
+                for bbox in labels:
+                    rle = convert_mask_to_coco_rle(color_mask, bbox)
+                    bbox.set_segmentation(rle)
 
             labeled_image = ISLabeledImage(image_source, labels, source_name)
             self.labeled_images.append(labeled_image)
+            print(source_name)
 
     def install(self, dataset_path: str, install_images: bool = True, install_annotations: bool = True):
         
@@ -123,9 +154,9 @@ class ISDataset(DetectionDataset):
 
                 split_bboxes += self.labeled_images[i].bboxes
 
-            annotation = converter.read_bboxes(split_bboxes)
+            annotation = converter.read_bboxes(split_bboxes, self.classes)
             if install_annotations:
-                converter.write_coco(annotation)
+                converter.write_coco(annotation, os.path.join(annotations_dir, 'data.json'))
 
 
 

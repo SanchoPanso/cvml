@@ -12,7 +12,6 @@ from data_science_tools.detection.dataset.annotation_converter import Annotation
 from data_science_tools.detection.dataset.label_editor import AnnotationEditor
 
 from data_science_tools.detection.dataset.image_transforming import expo
-from data_science_tools.detection.dataset.image_sources import convert_paths_to_sources
 
 source_dir = '/home/student2/datasets/TMK_CVS3'
 
@@ -114,8 +113,18 @@ if __name__ == '__main__':
         channel_1_paths.sort(key=lambda x: get_image_number(x))
         channel_2_paths.sort(key=lambda x: get_image_number(x))
 
+        expanded_color_mask_paths = []
+        mask_numbers = set([get_image_number(p) for p in color_mask_paths])
+        for img_file in channel_2_paths:
+            num = str(get_image_number(img_file))
+            found_masks = glob(os.path.join(image_dir, f'{num}_color*'))
+            if len(found_masks) == 0:
+                expanded_color_mask_paths.append(None)
+            else:
+                expanded_color_mask_paths.append(found_masks[0])
+
         image_sources = convert_paths_to_is_sources([channel_0_paths, channel_1_paths, channel_2_paths],
-                                                    color_mask_paths,
+                                                    expanded_color_mask_paths,
                                                     main_channel=2,
                                                     preprocess_fns=[None, None, wrap_expo])
 
@@ -129,7 +138,7 @@ if __name__ == '__main__':
             1: None,       # other
             2: None,    # joint 
             3: None,    # number
-            #4: 4,       # tube
+            4: None,       # tube
             #5: 5,       # sink
             6: None,    # birdhouse
             7: None,    # print
@@ -144,6 +153,7 @@ if __name__ == '__main__':
 
         final_dataset += dataset
 
+    final_dataset.classes = ['comet', 'other', 'joint', 'number', 'tube', 'sink', 'birdhouse', 'print', 'riska', 'deformation defect', 'continuity violation']
     result_dir = '/home/student2/datasets/tmk_cvs3_yolov5_07102022'
     # final_dataset.split_by_proportions({'train': 0.7, 'valid': 0.2, 'test': 0.1})
     final_dataset.split_by_dataset('/home/student2/datasets/tmk_cvs3_yolov5_02102022')
