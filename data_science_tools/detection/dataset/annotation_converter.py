@@ -250,11 +250,12 @@ class AnnotationConverter:
             for bbox in annotation.bounding_boxes[image_name]:
                 x, y, w, h = bbox.get_absolute_bounding_box()
                 cls_id = bbox.get_class_id()
+                segmentation = bbox.get_segmentation()
                 annotation = {
                     "id": bbox_id, 
                     "image_id": img_id, 
                     "category_id": cls_id + 1, 
-                    "segmentation": [], 
+                    "segmentation": segmentation, 
                     "area": w * h, 
                     "bbox": [x, y, w, h], 
                     "iscrowd": 0, 
