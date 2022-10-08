@@ -37,3 +37,34 @@ def add_double_to_byte(bt: int, d: float) -> int:
     return result
 
 
+def get_lines(img: np.ndarray):
+    dst = cv2.medianBlur(img, 21)
+    dst = cv2.Canny(dst, 10, 50, None, 3)
+    lines = cv2.HoughLines(dst, 1, np.pi / 180, 150, None, 0, 0)
+    return lines
+
+
+if __name__ == '__main__':
+    img = cv2.imread(r'D:\datasets\tmk_yolov5_25092022\train\images\1_comet_3.jpg')
+    img = cv2.split(img)[2]
+    img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+    lines = get_lines(img)
+    print(lines)
+    print(len(lines))
+
+    if lines is not None:
+        for i in range(0, len(lines)):
+            rho = lines[i][0][0]
+            theta = lines[i][0][1]
+            a = math.cos(theta)
+            b = math.sin(theta)
+            x0 = a * rho
+            y0 = b * rho
+            pt1 = (int(x0 + 2000 * (-b)), int(y0 + 2000 * (a)))
+            pt2 = (int(x0 - 2000 * (-b)), int(y0 - 2000 * (a)))
+            cv2.line(img, pt1, pt2, (0, 0, 255), 3, cv2.LINE_AA)
+
+    cv2.imshow("test", cv2.resize(img, (400, 400)))
+    cv2.waitKey()
+
+
