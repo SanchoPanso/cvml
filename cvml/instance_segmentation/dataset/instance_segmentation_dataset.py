@@ -127,10 +127,18 @@ class ISDataset(DetectionDataset):
             if color_mask is not None:
                 for bbox in labels:
                     rle = convert_mask_to_coco_rle(color_mask, bbox)
+                    bbox.set_segmentation(rle)
             else:
-                rle = [2048 * 2448] # CHANGE
-            bbox.set_segmentation(rle)
-
+                labels = []
+                # for bbox in labels:
+                #     width, height = bbox.get_image_size()
+                #     rle = {
+                #         'size': [width, height],
+                #         'counts': [width * height],
+                #     }
+                #     print(bbox.get_image_name(), rle)
+                #     bbox.set_segmentation(rle)
+                    
             labeled_image = ISLabeledImage(image_source, labels, source_name)
             self.labeled_images.append(labeled_image)
             print(source_name)

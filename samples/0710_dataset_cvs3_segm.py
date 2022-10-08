@@ -13,7 +13,7 @@ from cvml.detection.dataset.label_editor import AnnotationEditor
 
 from cvml.detection.dataset.image_transforming import expo
 
-source_dir = '/home/student2/datasets/TMK_CVS3'
+source_dir = '/home/student2/datasets/raw/TMK_CVS3'
 
 comet_1_dir = os.path.join(source_dir, 'csv1_comets_1_24_08_2022')
 comet_2_dir = os.path.join(source_dir, 'csv1_comets_2_24_08_2022')
@@ -156,7 +156,7 @@ if __name__ == '__main__':
     final_dataset.classes = ['comet', 'other', 'joint', 'number', 'tube', 'sink', 'birdhouse', 'print', 'riska', 'deformation defect', 'continuity violation']
     result_dir = '/home/student2/datasets/tmk_cvs3_yolov5_07102022'
     # final_dataset.split_by_proportions({'train': 0.7, 'valid': 0.2, 'test': 0.1})
-    final_dataset.split_by_dataset('/home/student2/datasets/tmk_cvs3_yolov5_02102022')
+    final_dataset.split_by_dataset('/home/student2/datasets/prepared/tmk_cvs3_yolov5_02102022')
     final_dataset.install(result_dir, install_images=False)
 
 
