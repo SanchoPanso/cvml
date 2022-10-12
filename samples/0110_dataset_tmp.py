@@ -11,7 +11,7 @@ from cvml.detection.dataset.detection_dataset import DetectionDataset
 from cvml.detection.dataset.extractor import AnnotationExtractor, Annotation
 from cvml.detection.dataset.annotation_converter import AnnotationConverter
 from cvml.detection.dataset.image_transforming import expo
-from cvml.detection.dataset.image_sources import convert_paths_to_sources
+from cvml.detection.dataset.image_source import convert_paths_to_sources
 
 tmk_dir = r'D:\TMK'
 

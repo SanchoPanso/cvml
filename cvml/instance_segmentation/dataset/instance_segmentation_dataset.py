@@ -12,7 +12,8 @@ from cvml.core.bounding_box import BoundingBox
 from cvml.detection.dataset.annotation import Annotation
 from cvml.detection.dataset.annotation_converter import AnnotationConverter
 from cvml.detection.dataset.detection_dataset import DetectionDataset, LabeledImage
-from cvml.detection.dataset.image_source import ImageSource, MultipleImageSource
+from cvml.detection.dataset.image_source import ImageSource
+from cvml.instance_segmentation.dataset.image_source import ISImageSource
 
 
 def convert_mask_to_coco_rle(color_mask: np.ndarray, bbox: BoundingBox) -> dict:
@@ -50,16 +51,6 @@ def convert_mask_to_coco_rle(color_mask: np.ndarray, bbox: BoundingBox) -> dict:
     rle['counts'] = counts
 
     return rle
-
-
-class ISImageSource(MultipleImageSource):
-    def __init__(self, paths: List[str], color_mask_path: str, main_channel: int = 0, preprocess_fns: List[Callable] = None):
-        super(ISImageSource, self).__init__(paths, main_channel, preprocess_fns)
-        self.color_mask_path = color_mask_path
-    
-    def get_color_mask(self):
-        img = cv2.imread(self.color_mask_path)
-        return img
 
 
 class ISLabeledImage(LabeledImage):
