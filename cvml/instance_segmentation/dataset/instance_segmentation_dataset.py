@@ -30,11 +30,12 @@ def convert_mask_to_coco_rle(color_mask: np.ndarray, bbox: BoundingBox) -> dict:
     h = min(h, height - y)
 
     if w == 0 or h == 0:
+        rle['counts'] = [width * height]
         return rle
 
     obj_crop = color_mask[y: y + h, x: x + w]
     obj_crop = cv2.cvtColor(obj_crop, cv2.COLOR_BGR2GRAY)
-    ret, binary_obj_crop = cv2.threshold(obj_crop, 1, 255, cv2.THRESH_BINARY)
+    ret, binary_obj_crop = cv2.threshold(obj_crop, 1, 1, cv2.THRESH_BINARY)
 
     binary_mask = np.zeros((height, width), dtype='uint8')
     binary_mask[y: y + h, x: x + w] = binary_obj_crop
