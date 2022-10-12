@@ -48,19 +48,20 @@ class AnnotationConverter:
         annotation = Annotation(classes_list, bb_dict)
         return annotation
 
-    def write_coco(self, annotation: Annotation, path: str):
+    def write_coco(self, annotation: Annotation, path: str, image_ext: str = '.jpg'):
         """
         :annotation: annotation to convert
         :path: absolute path for saving coco json  
+        :image_ext: file extension, under which images will be saved
         """
         
         # Get special dicts of coco-format from the specific annotation
         categories = self._get_categories_from_annotation(annotation)
-        images = self._get_images_from_annotation(annotation)
+        images = self._get_images_from_annotation(annotation, image_ext)
         annotations = self._get_bboxes_from_annotation(annotation)
 
         # Create default coco data
-        license = [{"name": "", "id": 0, "url": ""}]
+        licenses = [{"name": "", "id": 0, "url": ""}]
         info = {"contributor": "", 
                 "date_created": "", 
                 "description": "", 
@@ -70,7 +71,7 @@ class AnnotationConverter:
         
         # Create coco dict and save
         coco = {
-            'license': license,
+            'licenses': licenses,
             'info': info,
             'categories': categories,
             'images': images,
@@ -162,11 +163,13 @@ class AnnotationConverter:
             image_id = annotations[bbox_num]['image_id']
             cls_id = annotations[bbox_num]['category_id']
             bbox = annotations[bbox_num]['bbox']
+            segmentation = annotations[bbox_num]['segmentation']
             result[bbox_id] = {
                 'bbox_num': bbox_num,
                 'image_id': image_id,
                 'cls_id': cls_id,
                 'bbox': bbox,
+                'segmentation': segmentation,
             }
         return result
 
@@ -174,6 +177,7 @@ class AnnotationConverter:
         bbox = bboxes[bbox_id]['bbox']
         image_id = bboxes[bbox_id]['image_id']
         cls_id = bboxes[bbox_id]['cls_id']
+        segm = bboxes[bbox_id]['segmentation']
 
         cls_num = classes[cls_id]['cls_num']
 
@@ -188,7 +192,9 @@ class AnnotationConverter:
         bounding_box = BoundingBox(cls_num, x, y, w, h, 
                                    image_name=name, 
                                    type_coordinates=CoordinatesType.Absolute, 
-                                   img_size=(width, height))
+                                   img_size=(width, height),
+                                   class_confidence=1.0,
+                                   segmentation=segm)
 
         return bounding_box
 
@@ -203,7 +209,7 @@ class AnnotationConverter:
             categories.append(category)
         return categories
 
-    def _get_images_from_annotation(self, annotation: Annotation) -> dict:
+    def _get_images_from_annotation(self, annotation: Annotation, image_ext: str) -> dict:
         
         images = []
         img_id_dict = {}
@@ -216,7 +222,7 @@ class AnnotationConverter:
                 "id": img_id, 
                 "width": 2448, 
                 "height": 2048, 
-                "file_name": image_name + '.jpg', # REDO
+                "file_name": image_name + image_ext,
                 "license": 0, 
                 "flickr_url": "", 
                 "coco_url": "", 
@@ -241,10 +247,10 @@ class AnnotationConverter:
                     "image_id": img_id, 
                     "category_id": cls_id + 1, 
                     "segmentation": segmentation, 
-                    "area": w * h, 
-                    "bbox": [x, y, w, h], 
+                    "area": float(w * h), 
+                    "bbox": list(map(float, [x, y, w, h])), 
                     "iscrowd": 0, 
-                    "attributes*": {"occluded": False, "rotation": 0.0}
+                    "attributes": {"occluded": False, "rotation": 0.0}
                 }
                 bbox_id += 1
                 coco_annotations.append(coco_annotation)
