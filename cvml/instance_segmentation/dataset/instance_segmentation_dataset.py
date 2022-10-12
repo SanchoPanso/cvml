@@ -117,8 +117,8 @@ class ISDataset(DetectionDataset):
 
         for image_source in image_sources:
             source_name = image_source.get_name()
-            if source_name in annotation.bounding_boxes.keys():
-                labels = annotation.bounding_boxes[source_name]
+            if source_name in annotation.bbox_map.keys():
+                labels = annotation.bbox_map[source_name]
             else:
                 labels = []
             

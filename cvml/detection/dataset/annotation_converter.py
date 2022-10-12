@@ -3,23 +3,8 @@ import json
 from typing import Callable, List, Dict
 
 from cvml.core.bounding_box import BoundingBox, CoordinatesType
+from cvml.detection.dataset.annotation import Annotation
 from cvml.detection.dataset.io_handling import read_yolo_labels
-
-
-class Annotation:
-    """
-    Representation of the detection annotation of some dataset.
-    """
-    def __init__(self, 
-                 classes: List[str] = None, 
-                 bounding_boxes: Dict[str, List[BoundingBox]] = None):
-        """
-        :classes: list of class names
-        :bounding_boxes: dict with keys - image names and values - list of bounding boxes on this image
-        """
-        
-        self.classes = [] if classes is None else classes
-        self.bounding_boxes = {} if bounding_boxes is None else bounding_boxes
 
 
 class AnnotationConverter:
@@ -222,8 +207,8 @@ class AnnotationConverter:
         
         images = []
         img_id_dict = {}
-        for i, image_name in enumerate(annotation.bounding_boxes.keys()):
-            if len(annotation.bounding_boxes[image_name]) == 0:
+        for i, image_name in enumerate(annotation.bbox_map.keys()):
+            if len(annotation.bbox_map[image_name]) == 0:
                 continue
             img_id = i + 1
             img_id_dict[image_name] = img_id
@@ -243,11 +228,11 @@ class AnnotationConverter:
     def _get_bboxes_from_annotation(self, annotation: Annotation) -> dict:
         coco_annotations = []
         bbox_id = 1
-        for i, image_name in enumerate(annotation.bounding_boxes.keys()):
-            if len(annotation.bounding_boxes[image_name]) == 0:
+        for i, image_name in enumerate(annotation.bbox_map.keys()):
+            if len(annotation.bbox_map[image_name]) == 0:
                 continue
             img_id = i + 1
-            for bbox in annotation.bounding_boxes[image_name]:
+            for bbox in annotation.bbox_map[image_name]:
                 x, y, w, h = bbox.get_absolute_bounding_box()
                 cls_id = bbox.get_class_id()
                 segmentation = bbox.get_segmentation()

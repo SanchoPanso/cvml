@@ -8,11 +8,11 @@ class Annotation:
     """
     def __init__(self, 
                  classes: List[str] = None, 
-                 bounding_boxes: Dict[str, List[BoundingBox]] = None):
+                 bbox_map: Dict[str, List[BoundingBox]] = None):
         """
         :classes: list of class names
-        :bounding_boxes: dict with keys - image names and values - list of bounding boxes on this image
+        :bbox_map: dict with keys - image names and values - list of bounding boxes on this image
         """
         
         self.classes = [] if classes is None else classes
-        self.bounding_boxes = {} if bounding_boxes is None else bounding_boxes
+        self.bbox_map = {} if bbox_map is None else bbox_map
