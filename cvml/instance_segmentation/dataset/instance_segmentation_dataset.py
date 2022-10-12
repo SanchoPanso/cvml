@@ -72,7 +72,7 @@ class ISLabeledImage(LabeledImage):
 
     def save(self, images_dir: str = None):
         if images_dir is not None and self.image_source is not None:
-            self.image_source.save_to(os.path.join(images_dir, self.name + '.jpg'))
+            self.image_source.save(os.path.join(images_dir, self.name + '.jpg'))
 
 
 
