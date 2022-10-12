@@ -29,12 +29,15 @@ def test_convert_mask_to_coco_rle():
     img4 = np.zeros(img_shape_big, dtype='uint8')
     img4 = cv2.rectangle(img4, (0, 1), (20, 20), color, -1) 
 
-    imgs = [img1, img2, img3, img4]
+    img5 = np.zeros((0, 0, 3), dtype='uint8')
+
+    imgs = [img1, img2, img3, img4, img5]
     counts = [
         [100],
         [20, 70, 10],
         [0, 90, 10],
         [1] + [9, 11] * 9 + [9, 210],
+        [0],
     ]
 
     bbox = BoundingBox(0, 0, 0, 10, 10)
