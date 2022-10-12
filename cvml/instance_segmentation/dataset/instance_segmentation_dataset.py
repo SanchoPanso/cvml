@@ -12,7 +12,7 @@ from cvml.core.bounding_box import BoundingBox
 from cvml.detection.dataset.annotation import Annotation
 from cvml.detection.dataset.annotation_converter import AnnotationConverter
 from cvml.detection.dataset.detection_dataset import DetectionDataset, LabeledImage
-from cvml.detection.dataset.image_sources import ImageSource, MultipleImageSource
+from cvml.detection.dataset.image_source import ImageSource, MultipleImageSource
 
 
 def convert_mask_to_coco_rle(color_mask: np.ndarray, bbox: BoundingBox) -> dict:
