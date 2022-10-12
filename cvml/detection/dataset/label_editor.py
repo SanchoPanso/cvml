@@ -11,9 +11,9 @@ class AnnotationEditor:
     def change_classes_by_id(self, annotation: Annotation, id_changes: Dict[int, int or None]) -> Annotation:
         new_annotation = Annotation()
         
-        for image_name in annotation.bounding_boxes.keys():
-            new_annotation.bounding_boxes[image_name] = []
-            bboxes = annotation.bounding_boxes[image_name]
+        for image_name in annotation.bbox_map.keys():
+            new_annotation.bbox_map[image_name] = []
+            bboxes = annotation.bbox_map[image_name]
             for bbox in bboxes:
                 cls_id = bbox.get_class_id()
                 changed_cls_id = self.get_changed_class_id(cls_id, id_changes)
@@ -22,7 +22,7 @@ class AnnotationEditor:
                     continue
                 
                 bbox._class_id = changed_cls_id # CHECK
-                new_annotation.bounding_boxes[image_name].append(bbox)
+                new_annotation.bbox_map[image_name].append(bbox)
         
         return new_annotation
 
