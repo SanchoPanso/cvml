@@ -80,7 +80,7 @@ class BoundingBox:
                  img_size: tuple = None,
                  bb_type: BBType = BBType.GroundTruth,
                  format: BBFormat = BBFormat.XYWH,
-                 segmetation: dict = None):
+                 segmentation: dict or list = None):
         """Constructor.
         Args:
             image_name: String representing the image name.
@@ -154,7 +154,7 @@ class BoundingBox:
             self._width_img = img_size[0]
             self._height_img = img_size[1]
         
-        self._segmentation = segmetation or []
+        self._segmentation = segmentation or []
 
     def __str__(self):
         return f"BoundingBox(class_id = {self._class_id}, x = {self._x}, y = {self._y}, w = {self._w}, h = {self._h})"
