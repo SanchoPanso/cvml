@@ -15,17 +15,17 @@ def read_yolo_labels(path: str, img_size: tuple) -> List[BoundingBox]:
             row_data = list(map(float, row.split(' ')))
             if len(row_data) == 5:
                 cls_id, xc, yc, w, h = row_data
-                x = xc - w / 2
-                y = yc - h / 2
+                # x = xc - w / 2
+                # y = yc - h / 2
                 cls_conf = None
             else:  # 6
                 cls_id, xc, yc, w, h, cls_conf = row_data
-                x = xc - w / 2
-                y = yc - h / 2
+                # x = xc - w / 2
+                # y = yc - h / 2
 
-            bbox = BoundingBox(cls_id, x, y, w, h, cls_conf, None, 
+            bbox = BoundingBox(cls_id, xc, yc, w, h, cls_conf, 
                                type_coordinates=CoordinatesType.Relative,
-                               img_name=image_name,
+                               image_name=image_name,
                                img_size=img_size)
             bboxes.append(bbox)
     return bboxes

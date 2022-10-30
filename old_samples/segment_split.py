@@ -38,5 +38,5 @@ for split in ['train', 'valid']:
         np.savez(os.path.join(dataset_dir, split, name + '.npz'), arr_0=mask)
         print(i, name)
 
-
+    
 
