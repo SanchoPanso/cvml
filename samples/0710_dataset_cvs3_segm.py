@@ -7,6 +7,8 @@ from typing import Callable, List
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
+
+from cvml.detection.dataset.image_source import MultipleImageReader
 from cvml.instance_segmentation.dataset.instance_segmentation_dataset import ISDataset, ISImageSource
 from cvml.detection.dataset.annotation_converter import AnnotationConverter
 from cvml.detection.dataset.label_editor import AnnotationEditor
@@ -81,7 +83,7 @@ def convert_paths_to_is_sources(paths: List[List[str]],
     for i in range(num_of_sources):
         cur_paths = [paths[channel][i] for channel in range(num_of_channels)]
         color_mask_path = color_mask_paths[i]
-        image_source = ISImageSource(cur_paths, color_mask_path, main_channel, preprocess_fns)
+        image_source = ISImageSource(MultipleImageReader(), color_mask_path, cur_paths, main_channel, preprocess_fns)
         image_sources.append(image_source)
 
     return image_sources
