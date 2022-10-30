@@ -117,11 +117,7 @@ def convert_paths_to_sources(paths: List[List[str]], preprocess_fns: List[Callab
 
 
 def convert_single_paths_to_sources(paths: List[str], preprocess_fn: Callable):
-
-    for i in range(1, len(paths)):
-        if len(paths[i - 1]) != len(paths[i]):
-            raise ValueError("Number of each channels paths must be the same")
-
+    
     image_sources = []
 
     for i, path in enumerate(paths):
