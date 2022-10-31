@@ -31,7 +31,7 @@ class SingleImageReader(ImageReader):
         self.preprocess_fn = preprocess_fn
     
     def read(self) -> np.ndarray:
-        img = cv2.imdecode(np.fromfile(self.path, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+        img = cv2.imdecode(np.fromfile(self.path, dtype=np.uint8), cv2.IMREAD_COLOR)
         img = self.preprocess_fn(img)
         return img
 
@@ -82,7 +82,7 @@ class DetectionImageSource(ImageSource):
         return self.image_reader.get_name()
 
     def read(self) -> np.ndarray:
-        self.image_reader.read()
+        return self.image_reader.read()
     
     def write(self, path: str, img: np.ndarray):
         ext = os.path.splitext(os.path.split(path)[-1])[1]

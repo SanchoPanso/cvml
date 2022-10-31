@@ -24,7 +24,7 @@ class SPEstimator:
         P.select(2, 1).copy_(torch.as_tensor(self._angles,dtype=torch.float64).mul_(2.0*pi/180.0).cos_().squeeze_())
         P.select(2, 2).copy_(torch.as_tensor(self._angles,dtype=torch.float64).mul_(2.0*pi/180.0).sin_().squeeze_())
         self._Pinv = torch.as_tensor( torch.linalg.pinv( P.squeeze(0).detach() ).detach() ,dtype=torch.float32).detach()
-        print("size {0} data {1}".format(self._Pinv.size(),self._Pinv))
+        # print("size {0} data {1}".format(self._Pinv.size(),self._Pinv))
 
     
     def getAzimuthAndPolarization(self, input:Tens)->(Tens,Tens,Tens):  # type: ignore
@@ -40,7 +40,7 @@ class SPEstimator:
         c_arr = self.get_c_array(in_arr)
         d_arr = self.get_d_array(in_arr)
 
-        print("data copied")
+        #print("data copied")
 
         common_tensor=torch.zeros(4,input.shape[0],input.shape[1])
         common_tensor.select(0,0).copy_(torch.as_tensor(np.array(a_arr.T.reshape(width, height),  order='F').reshape(height, width)))
@@ -49,15 +49,15 @@ class SPEstimator:
         common_tensor.select(0,3).copy_(torch.as_tensor(np.array(d_arr.T.reshape(width, height),  order='F').reshape(height, width)))
 
         common_tensor = common_tensor.reshape(1, 4, width * height).squeeze_(0)
-        print("common_tensor reshaped")
+        #print("common_tensor reshaped")
         O = self._Pinv.mm(common_tensor).cpu().detach_()
-        print("multiplicated")
+        #print("multiplicated")
         copy_one = O.select(0,2).clone().detach_()
         #multiplier=0.5*180.0/pi
         multiplier=0.5
         #azimuth
         phi=copy_one.atan2_(O.select(0,1)).mul_(multiplier).clone().detach_()
-        print("atan2 called")
+        #print("atan2 called")
         #polarization
         rho=O.select(0,1).square_().add_(O.select(0,2).square_()).sqrt_().divide_(O.select(0,0))
 

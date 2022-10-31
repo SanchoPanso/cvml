@@ -9,7 +9,7 @@ from enum import Enum
 
 from cvml.core.bounding_box import BoundingBox
 from .io_handling import write_yolo_labels, read_yolo_labels
-from .extractor import Annotation
+from cvml.detection.dataset.annotation import Annotation
 from .image_source import ImageSource
 
 
@@ -80,8 +80,8 @@ class DetectionDataset:
 
         for image_source in image_sources:
             source_name = image_source.get_name()
-            if source_name in annotation.bounding_boxes.keys():
-                labels = annotation.bounding_boxes[source_name]
+            if source_name in annotation.bbox_map.keys():
+                labels = annotation.bbox_map[source_name]
             else:
                 labels = []
 
