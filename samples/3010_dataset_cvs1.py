@@ -55,7 +55,8 @@ def normalize_min_max(data):
 def convert_to_mixed(orig_img: np.ndarray) -> np.ndarray:
 
     height, width = orig_img.shape[0:2]
-    in_data = torch.frombuffer(orig_img.data, dtype=torch.uint8, count=orig_img.size).float().detach_().reshape(height, width)
+    img = cv2.cvtColor(orig_img, cv2.COLOR_BGR2GRAY)
+    in_data = torch.from_numpy(img).float() #torch.frombuffer(orig_img.data, dtype=torch.uint8, count=img.size).float().detach_().reshape(height, width)
     
     estimator = SPEstimator()
     rho, phi = estimator.getAzimuthAndPolarization(in_data)
@@ -92,27 +93,27 @@ if __name__ == '__main__':
     editor = AnnotationEditor()
     final_dataset = DetectionDataset()
 
-    # TODO
-    raw_datasets_dir = ''
-    raw_dirs = os.listdir(raw_datasets_dir)
+    raw_datasets_dir = '/home/student2/datasets/raw/TMK_3010'
+    raw_dirs = glob.glob(os.path.join(raw_datasets_dir, '*cvs1*'))
+    raw_dirs += glob.glob(os.path.join(raw_datasets_dir, '*csv1*'))
+    raw_dirs += glob.glob(os.path.join(raw_datasets_dir, '23_06_2021_номера_оправок_командир'))
+    raw_dirs.sort()
 
-    for rd in raw_dirs:
+    for dataset_dir in raw_dirs:
         
         dataset = DetectionDataset()
-
-        dataset_dir = os.path.join(raw_datasets_dir, rd)
-        print(dataset_dir)
 
         image_dir = os.path.join(dataset_dir, 'images')
         all_files = glob.glob(os.path.join(image_dir, '*'))
         color_masks_files = glob.glob(os.path.join(image_dir, '*color_mask*'))
         image_files = list(set(all_files) - set(color_masks_files))
+        print(len(image_files), dataset_dir)
 
         image_sources = convert_single_paths_to_sources(paths=image_files,
                                                         preprocess_fn=convert_to_mixed)
 
         annotation_path = os.path.join(dataset_dir, 'annotations', 'instances_default.json')
-        renamer = lambda x: x + '_' + rd
+        renamer = lambda x: x + '_' + os.path.split(dataset_dir)[-1]
 
         annotation_data = converter.read_coco(annotation_path)
 
@@ -136,9 +137,11 @@ if __name__ == '__main__':
 
         final_dataset += dataset
 
-    result_dir = '/home/student2/datasets/prepared/tmk_cvs1_yolov5_30102022'
+    result_dir = '/home/student2/datasets/prepared/tmk_cvs1_yolov5_31102022'
     final_dataset.split_by_proportions({'train': 0.7, 'valid': 0.2, 'test': 0.1})
-
+    print(len(final_dataset.splits['train']))
+    print(len(final_dataset.splits['valid']))
+    print(len(final_dataset.splits['test']))
     #final_dataset.split_by_dataset(result_dir)
     # for idx in final_dataset.splits['valid']:
     #     lbl_img = final_dataset[idx]
@@ -148,6 +151,6 @@ if __name__ == '__main__':
     #         if bb.get_class_id() == 10:
     #             print(name)
     
-    # final_dataset.install(result_dir)
+    final_dataset.install(result_dir)
 
 
