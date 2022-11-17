@@ -142,14 +142,6 @@ if __name__ == '__main__':
     print(len(final_dataset.splits['train']))
     print(len(final_dataset.splits['valid']))
     print(len(final_dataset.splits['test']))
-    #final_dataset.split_by_dataset(result_dir)
-    # for idx in final_dataset.splits['valid']:
-    #     lbl_img = final_dataset[idx]
-    #     bboxes = lbl_img.bboxes
-    #     name = lbl_img.name
-    #     for bb in bboxes:
-    #         if bb.get_class_id() == 10:
-    #             print(name)
     
     final_dataset.install(result_dir)
 
