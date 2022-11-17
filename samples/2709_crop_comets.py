@@ -12,13 +12,6 @@ from cvml.detection.dataset_tools.image_transforming import expo
 crop_counter = 1
 comet_id = 0
 
-tmk_dir = r'F:\TMK'
-comet_dirs = {
-    'comet_3': os.path.join(tmk_dir, 'csv1_comets_23_08_2022'),
-    'comet_4': os.path.join(tmk_dir, 'csv1_comets_01_09_2022'),
-    'comet_5': os.path.join(tmk_dir, 'csv1_comets_05_09_2022'),
-}
-
 
 def get_masked_img(label: list, final_img: np.ndarray, mask: np.ndarray) -> np.ndarray:
     cls_id, xc, yc, w, h = label
@@ -107,13 +100,16 @@ def crop_comets(images_dir, polarization_dir, color_masks_dir, annotation_path,
 
 
 if __name__ == '__main__':
-    save_dir = 'F:\\datasets\\2709_comet_crops'
+    save_dir = 'F:\\datasets\\2709_comet_crops' # CHANGE
 
-    train_names = get_train_names(r'F:\datasets\tmk_yolov5_25092022\train\images')
+    train_names = get_train_names(r'F:\datasets\tmk_yolov5_25092022\train\images')  # CHANGE
     print(train_names)
 
-    for key in comet_dirs.keys():
-        comet_dir = comet_dirs[key]
+    tmk_dir = ''    # CHANGE
+    comet_dirs = os.listdir(tmk_dir)
+
+    for key in comet_dirs:
+        comet_dir = key
         images_dir = os.path.join(comet_dir, 'images')
         polarization_dir = os.path.join(comet_dir, 'polarization')
         color_masks_dir = os.path.join(comet_dir, 'color_masks')
