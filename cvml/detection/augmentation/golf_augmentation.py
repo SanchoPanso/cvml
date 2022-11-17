@@ -270,7 +270,7 @@ class MaskMixup:
                                          scale=0.4,
                                          shear=30,
                                          perspective=0.0,
-                                         scale_coef=0.5) -> np.ndarray:
+                                         scale_coef=0.6) -> np.ndarray:
         height = img_shape[0]
         width = img_shape[1]
 
@@ -468,15 +468,15 @@ class Yolov5Detector:
 
 
 
-def get_tube_crop(detector: Yolov5Detector, img: np.ndarray) -> np.ndarray:
-    output = detector(img[:, :, ::-1])
-    if output.shape[0] == 0:
-        return None
+# def get_tube_crop(detector: Yolov5Detector, img: np.ndarray) -> np.ndarray:
+#     output = detector(img[:, :, ::-1])
+#     if output.shape[0] == 0:
+#         return None
     
-    x, y, w, h, _, _ = output[0]
-    tube_crop = img[y: y + h, x: x + w]
+#     x, y, w, h, _, _ = output[0]
+#     tube_crop = img[y: y + h, x: x + w]
 
-    return tube_crop
+#     return tube_crop
 
 
 def test_line(img):
@@ -637,7 +637,7 @@ def get_tube_crop(img: np.ndarray, labels: np.ndarray, height: int, width: int) 
             break
     
     if len(target_lines) == 0:
-        return img, labels
+        return False, img, labels
     
 
     region_points = []
@@ -695,15 +695,9 @@ def get_tube_crop(img: np.ndarray, labels: np.ndarray, height: int, width: int) 
 
             new_bboxes.append([cls_id, x1 + w/2, y1 + h/2, w, h])
         
-        cv2.imshow("Cropped Tube", tube_img)
+        return True, tube_img, np.array(new_bboxes).reshape(-1, 5)
 
-
-    cv2.imshow("Detected Lines (in red) - Standard Hough Line Transform", cdst)
-    cv2.imshow("Source", gray)
-    
-    cv2.waitKey(0)
-
-    return tube_img, np.array(new_bboxes).reshape(-1, 5)
+    return False, img, labels
 
 
 def tube_augmentation(img: np.ndarray, 
@@ -719,16 +713,16 @@ def tube_augmentation(img: np.ndarray,
 
 if __name__ == '__main__':
 
-    dataset_dir = r'D:\datasets\tmk_yolov5_17092022'
-    new_dataset_dir = r'D:\datasets\tmk_yolov5_17092022_aug'
+    dataset_dir = '/home/student2/datasets/prepared/tmk_cvs1_yolov5_31102022_gray'
+    new_dataset_dir = '/home/student2/datasets/prepared/tmk_cvs1_yolov5_31102022_gray_numbers'
     
     # detector = Yolov5Detector(r'E:\PythonProjects\AnnotationConverter\weights\yolov5l_tube.pt')
-    dir_coco_obj = r"D:\datasets_old\defects_segment_27092022"
-    coco_class_names = ['comet']
-    class_names = ['comet']
+    dir_coco_obj = "/home/student2/Downloads/gray_class"
+    coco_class_names = ['0', '1', '2', '3', '4', '5', '6', '7', '8'] #['comet']
+    class_names = ['0', '1', '2', '3', '4', '5', '6', '7', '8'] #['comet']
     golf = MaskMixup(crop_obj_dir=dir_coco_obj, crop_class_names=coco_class_names, class_names=class_names)
     
-    splits = ['train']
+    splits = ['train', 'valid']
     for split in splits:
         images_dir = os.path.join(dataset_dir, split, 'images')
         labels_dir = os.path.join(dataset_dir, split, 'labels')
@@ -747,32 +741,39 @@ if __name__ == '__main__':
             img = cv2.imread(os.path.join(images_dir, img_file))
             img = cv2.resize(img, (640, 535))
             labels = read_labels(os.path.join(labels_dir, img_name + '.txt'))
-            print('old_labels', labels)
+            # print('old_labels', labels)
 
-            img, labels = get_tube_crop(img, labels, img.shape[0], img.shape[1])
-            #test_line(img)
-
+            if 3 in [labels[i][0] for i in range(labels.shape[0])]:
+                print('3 in', img_name)
+                continue
+            
+            labels = np.zeros((0, 5))
+            # ret, img, labels = get_tube_crop(img, labels, img.shape[0], img.shape[1])
+            # if ret is False:
+            #     continue
+            
             # tube_img = get_tube_crop(detector, img)
             new_img, new_labels = golf(img, labels)
 
-            print(new_labels)
-            for i in range(new_labels.shape[0]):
-                cls_id, xc, yc, w, h = new_labels[i]
-                x = int((xc - w/2) * img.shape[1])
-                y = int((yc - h/2) * img.shape[0])
-                w = int(w * img.shape[1])
-                h = int(h * img.shape[0])
-                cv2.rectangle(new_img,
-                            (x, y),
-                            (x + w, y + h),
-                            (0, 255, 0), 5)
+            # print(new_labels)
+            
+            # for i in range(new_labels.shape[0]):
+            #     cls_id, xc, yc, w, h = new_labels[i]
+            #     x = int((xc - w/2) * img.shape[1])
+            #     y = int((yc - h/2) * img.shape[0])
+            #     w = int(w * img.shape[1])
+            #     h = int(h * img.shape[0])
+            #     cv2.rectangle(new_img,
+            #                 (x, y),
+            #                 (x + w, y + h),
+            #                 (0, 255, 0), 5)
         
-            cv2.imshow("test", new_img)
-            if cv2.waitKey(0) == 27:
-                break
+            # cv2.imshow("test", new_img)
+            # if cv2.waitKey(0) == 27:
+            #     break
 
-            # cv2.imwrite(os.path.join(new_images_dir, img_name + '_aug.jpg'), new_img)
-            # write_labels(os.path.join(new_labels_dir, img_name + '_aug.txt'), new_labels)
+            cv2.imwrite(os.path.join(new_images_dir, img_name + '_aug.jpg'), new_img)
+            write_labels(os.path.join(new_labels_dir, img_name + '_aug.txt'), new_labels)
 
             # break ### TMP
 
