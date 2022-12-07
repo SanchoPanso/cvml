@@ -110,7 +110,7 @@ if __name__ == '__main__':
         print(len(image_files), dataset_dir)
 
         image_sources = convert_single_paths_to_sources(paths=image_files,
-                                                        preprocess_fn=wrap_expo)
+                                                        preprocess_fn=convert_to_mixed)
 
         annotation_path = os.path.join(dataset_dir, 'annotations', 'instances_default.json')
         renamer = lambda x: x + '_' + os.path.split(dataset_dir)[-1]
@@ -137,7 +137,7 @@ if __name__ == '__main__':
 
         final_dataset += dataset
 
-    result_dir = '/home/student2/datasets/prepared/tmk_cvs1_yolov5_31102022_gray'
+    result_dir = '/home/student2/datasets/prepared/tmk_cvs1_yolov5_31102022'
     final_dataset.split_by_proportions({'train': 0.7, 'valid': 0.2, 'test': 0.1})
     print(len(final_dataset.splits['train']))
     print(len(final_dataset.splits['valid']))
