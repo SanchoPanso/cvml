@@ -3,6 +3,8 @@ import cv2
 import numpy as np
 import glob
 import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from cvml.detection.augmentation.sp_estimator import SPEstimator
 from cvml.detection.dataset.image_transforming import expo
 
@@ -34,11 +36,14 @@ def convert_to_mixed(orig_img: np.ndarray) -> np.ndarray:
     estimator = SPEstimator()
     rho, phi = estimator.getAzimuthAndPolarization(in_data)
     
-    normalized_rho = normalize_std(rho)
-    normalized_phi = normalize_std(phi)
+    normalized_rho = normalize_min_max(rho).numpy()
+    normalized_phi = normalize_min_max(phi).numpy()
 
-    rho_img = (normalized_rho * 255).numpy().astype('uint8')
-    phi_img = (normalized_phi * 255).numpy().astype('uint8')
+
+    rho_img = (normalized_rho * 255).astype('uint8')
+    phi_img = (normalized_phi * 255).astype('uint8')
+
+    #phi_img = cv2.GaussianBlur(phi_img, (5, 5), 1)
 
     img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
     gray_img = expo(img, 15)
@@ -48,8 +53,8 @@ def convert_to_mixed(orig_img: np.ndarray) -> np.ndarray:
     return img
 
 
-image_dir = ''
-image_paths = glob.glob(os.path.join(image_dir, '*.jpg'))
+image_dir = '/home/student2/datasets/raw/TMK_3010/csv1_comet_1/images'
+image_paths = glob.glob(os.path.join(image_dir, '*.png'))
 
 for path in image_paths:
     img = cv2.imread(path)
@@ -62,4 +67,5 @@ for path in image_paths:
     cv2.imshow('rho', rho)
     cv2.imshow('gray', gray)
 
-    cv2.waitKey()
+    if cv2.waitKey() == 27:
+        break

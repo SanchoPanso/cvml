@@ -267,7 +267,7 @@ class MaskMixup:
                                          img_shape: tuple,
                                          degrees=20,
                                          translate=0.4,
-                                         scale=0.4,
+                                         scale=0.45,
                                          shear=30,
                                          perspective=0.0,
                                          scale_coef=0.6) -> np.ndarray:
@@ -713,16 +713,16 @@ def tube_augmentation(img: np.ndarray,
 
 if __name__ == '__main__':
 
-    dataset_dir = '/home/student2/datasets/prepared/tmk_cvs1_yolov5_31102022_gray'
-    new_dataset_dir = '/home/student2/datasets/prepared/tmk_cvs1_yolov5_31102022_gray_numbers'
+    dataset_dir = '/home/student2/datasets/prepared/tmk_cvs3_yolov5_17122022'
+    new_dataset_dir = '/home/student2/datasets/prepared/tmk_cvs3_yolov5_17122022_aug'
     
     # detector = Yolov5Detector(r'E:\PythonProjects\AnnotationConverter\weights\yolov5l_tube.pt')
-    dir_coco_obj = "/home/student2/Downloads/gray_class"
-    coco_class_names = ['0', '1', '2', '3', '4', '5', '6', '7', '8'] #['comet']
-    class_names = ['0', '1', '2', '3', '4', '5', '6', '7', '8'] #['comet']
+    dir_coco_obj = "/home/student2/datasets/crops/0210_defect_crops"#"/home/student2/datasets/crops/0712_comet_crops"
+    coco_class_names = ['comet', 'other', 'joint', 'number', 'tube', 'sink', 'birdhouse', 'print', 'riska', 'deformation defect', 'continuity violation']#['comet']
+    class_names = ['comet', 'other', 'joint', 'number', 'tube', 'sink', 'birdhouse', 'print', 'riska', 'deformation defect', 'continuity violation']#['comet']
     golf = MaskMixup(crop_obj_dir=dir_coco_obj, crop_class_names=coco_class_names, class_names=class_names)
     
-    splits = ['train', 'valid']
+    splits = ['train']
     for split in splits:
         images_dir = os.path.join(dataset_dir, split, 'images')
         labels_dir = os.path.join(dataset_dir, split, 'labels')

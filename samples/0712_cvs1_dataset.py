@@ -16,6 +16,27 @@ from cvml.detection.dataset.image_transforming import expo
 from cvml.detection.dataset.image_source import convert_single_paths_to_sources
 from cvml.detection.augmentation.sp_estimator import SPEstimator
 
+source_dir = '/home/student2/datasets/TMK_CVS3'
+
+comet_1_dir = os.path.join(source_dir, 'csv1_comets_1_24_08_2022')
+comet_2_dir = os.path.join(source_dir, 'csv1_comets_2_24_08_2022')
+comet_3_dir = os.path.join(source_dir, 'csv1_comets_23_08_2022')
+comet_4_dir = os.path.join(source_dir, 'csv1_comets_01_09_2022')
+comet_5_dir = os.path.join(source_dir, 'csv1_comets_05_09_2022')
+
+
+dataset_dirs = {
+    'tmk_1': os.path.join(source_dir, 'SVC3_defects TMK1'),
+    'tmk_2': os.path.join(source_dir, 'SVC3_defects TMK2'),
+    'tmk_3': os.path.join(source_dir, 'SVC3_defects TMK3'),
+    'tmk_4': os.path.join(source_dir, 'SVC3_defects TMK4'),
+    'tmk_5': os.path.join(source_dir, 'SVC3_defects TMK5'),
+}
+
+renamers = {}
+for key in dataset_dirs.keys():
+    renamers[key] = lambda x: x + '_' + key
+
 
 def wrap_expo(img: np.ndarray):
     #img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
@@ -76,9 +97,8 @@ if __name__ == '__main__':
     raw_dirs = glob.glob(os.path.join(raw_datasets_dir, '*cvs1*'))
     raw_dirs += glob.glob(os.path.join(raw_datasets_dir, '*csv1*'))
     raw_dirs += glob.glob(os.path.join(raw_datasets_dir, '23_06_2021_номера_оправок_командир'))
+    raw_dirs += glob.glob(os.path.join(raw_datasets_dir, 'TMK_comet_november1'))
     raw_dirs.sort()
-
-    result_dir = '/home/student2/datasets/prepared/tmk_cvs1_yolov5_18112022'
 
     for dataset_dir in raw_dirs:
         
@@ -116,18 +136,14 @@ if __name__ == '__main__':
         dataset.update(image_sources, annotation_data)
         dataset.rename(renamer)
 
-        dataset.split_by_proportions({f'train': 0.7, 
-                                      f'valid': 0.2, 
-                                      f'test': 0.1})
         final_dataset += dataset
 
-    result_dir = '/home/student2/datasets/prepared/tmk_cvs1_yolov5_18112022'
+    result_dir = '/home/student2/datasets/prepared/tmk_cvs1_yolov5_0712022'
+    final_dataset.split_by_proportions({'train': 0.7, 'valid': 0.2, 'test': 0.1})
     print(len(final_dataset.splits['train']))
     print(len(final_dataset.splits['valid']))
     print(len(final_dataset.splits['test']))
     
     final_dataset.install(result_dir)
-        
-
 
 

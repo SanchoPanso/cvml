@@ -16,6 +16,27 @@ from cvml.detection.dataset.image_transforming import expo
 from cvml.detection.dataset.image_source import convert_single_paths_to_sources
 from cvml.detection.augmentation.sp_estimator import SPEstimator
 
+source_dir = '/home/student2/datasets/TMK_CVS3'
+
+comet_1_dir = os.path.join(source_dir, 'csv1_comets_1_24_08_2022')
+comet_2_dir = os.path.join(source_dir, 'csv1_comets_2_24_08_2022')
+comet_3_dir = os.path.join(source_dir, 'csv1_comets_23_08_2022')
+comet_4_dir = os.path.join(source_dir, 'csv1_comets_01_09_2022')
+comet_5_dir = os.path.join(source_dir, 'csv1_comets_05_09_2022')
+
+
+dataset_dirs = {
+    'tmk_1': os.path.join(source_dir, 'SVC3_defects TMK1'),
+    'tmk_2': os.path.join(source_dir, 'SVC3_defects TMK2'),
+    'tmk_3': os.path.join(source_dir, 'SVC3_defects TMK3'),
+    'tmk_4': os.path.join(source_dir, 'SVC3_defects TMK4'),
+    'tmk_5': os.path.join(source_dir, 'SVC3_defects TMK5'),
+}
+
+renamers = {}
+for key in dataset_dirs.keys():
+    renamers[key] = lambda x: x + '_' + key
+
 
 def wrap_expo(img: np.ndarray):
     #img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
@@ -73,12 +94,8 @@ if __name__ == '__main__':
     final_dataset = DetectionDataset()
 
     raw_datasets_dir = '/home/student2/datasets/raw/TMK_3010'
-    raw_dirs = glob.glob(os.path.join(raw_datasets_dir, '*cvs1*'))
-    raw_dirs += glob.glob(os.path.join(raw_datasets_dir, '*csv1*'))
-    raw_dirs += glob.glob(os.path.join(raw_datasets_dir, '23_06_2021_номера_оправок_командир'))
+    raw_dirs = glob.glob(os.path.join(raw_datasets_dir, '*SCV3*'))
     raw_dirs.sort()
-
-    result_dir = '/home/student2/datasets/prepared/tmk_cvs1_yolov5_18112022'
 
     for dataset_dir in raw_dirs:
         
@@ -99,15 +116,15 @@ if __name__ == '__main__':
         annotation_data = converter.read_coco(annotation_path)
 
         changes = {
-            0: 0,    # comet 
-            1: None,       # other
-            2: 2,    # joint 
-            3: 3,    # number
-            4: None,       # tube
-            5: None,       # sink
+            0: None,    # comet 
+            1: 1,       # other
+            2: None,    # joint 
+            3: None,    # number
+            4: 4,       # tube
+            5: 5,       # sink
             6: None,    # birdhouse
             7: None,    # print
-            8: None,       # riska
+            8: 8,       # riska
             9: None,       # deformation defect
             10: None,     # continuity violation
         }
@@ -116,18 +133,35 @@ if __name__ == '__main__':
         dataset.update(image_sources, annotation_data)
         dataset.rename(renamer)
 
-        dataset.split_by_proportions({f'train': 0.7, 
-                                      f'valid': 0.2, 
-                                      f'test': 0.1})
         final_dataset += dataset
 
-    result_dir = '/home/student2/datasets/prepared/tmk_cvs1_yolov5_18112022'
+    result_dir = '/home/student2/datasets/prepared/tmk_cvs3_yolov5_17122022'
+    final_dataset.split_by_proportions({'train': 0.8, 'valid': 0.2, 'test': 0.0})
+
     print(len(final_dataset.splits['train']))
     print(len(final_dataset.splits['valid']))
     print(len(final_dataset.splits['test']))
+
+    valid_cnt = {}
+    for i in final_dataset.splits['valid']:
+        lbl_img = final_dataset.labeled_images[i]
+        for bb in lbl_img.bboxes:
+            cls_id = bb.get_class_id() 
+            if cls_id in valid_cnt:
+                valid_cnt[cls_id] += 1
+            else:
+                valid_cnt[cls_id] = 1
+
+    train_cnt = {}
+    for i in final_dataset.splits['train']:
+        lbl_img = final_dataset.labeled_images[i]
+        for bb in lbl_img.bboxes:
+            cls_id = bb.get_class_id() 
+            if cls_id in train_cnt:
+                train_cnt[cls_id] += 1
+            else:
+                train_cnt[cls_id] = 1
     
     final_dataset.install(result_dir)
-        
-
 
 

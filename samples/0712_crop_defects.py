@@ -14,12 +14,12 @@ from cvml.detection.augmentation.sp_estimator import SPEstimator
 
 def main():
     # Yolo dataset dir for extracting splits
-    yolo_dataset_path = '/home/student2/datasets/tmk_cvs3_yolov5_02102022'
+    yolo_dataset_path = '/home/student2/datasets/prepared/tmk_cvs1_yolov5_07122022'
     
     # Dir with tmk datasets for extracting bbox, mask
-    tmk_dirs_path = '/home/student2/datasets/TMK_CVS3'
+    tmk_dirs_path = '/home/student2/datasets/raw/TMK_3010'
 
-    save_dir = '/home/student2/datasets/crops/0611_comet_crops'
+    save_dir = '/home/student2/datasets/crops/0712_comet_crops'
     class_names = [
         'comet', 
         'other', 
@@ -40,7 +40,7 @@ def main():
     tmk_dirs = os.listdir(tmk_dirs_path)
 
     for tmk_dir in tmk_dirs:
-        tmk_dir_path = os.path.join(tmk_dirs, tmk_dir)
+        tmk_dir_path = os.path.join(tmk_dirs_path, tmk_dir)
 
         crop_counter = crop_defects(tmk_dir_path,
                                     yolo_dataset_path,
@@ -54,6 +54,8 @@ def crop_defects(tmk_dir_path: str,
                  defect_ids: list,
                  crop_counters: dict,
                  save_dir: str) -> dict:
+
+    os.makedirs(save_dir, exist_ok=True)
 
     tmk_dirs_path = os.path.dirname(tmk_dir_path)
     tmk_dir = os.path.split(tmk_dir_path)[-1]
@@ -71,17 +73,19 @@ def crop_defects(tmk_dir_path: str,
 
         # Checking img name in annotation data
         img_name, ext = os.path.splitext(os.path.split(img_path)[-1])
-        if img_name not in annotation_data.bounding_boxes.keys():
+        if img_name not in annotation_data.bbox_map.keys():
             print(img_name, 'is absent')
             continue
         
         # Checking color mask in common list of masks
-        color_mask_path = os.path.join(tmk_dir_path, 'images', img_path + '_color_mask.png')
+        color_mask_path = os.path.join(tmk_dir_path, 'images', img_name + '_color_mask.png')
         if not os.path.exists(color_mask_path):
             print(img_name, 'color mask is absent')
+            continue
 
         # Checking img name in train set
-        if not os.path.exists(os.path.join(yolo_dataset_path, 'train', 'images', f'{img_name}_{tmk_dir}.jpg')):
+        dataset_file_path = os.path.join('/home/student2/datasets/prepared/tmk_cvs1_yolov5_0712022/train/images', f'{img_name}_{tmk_dir}.jpg')
+        if not os.path.exists(dataset_file_path):
             print(img_name, 'not in train')
             continue
 
@@ -97,7 +101,7 @@ def crop_defects(tmk_dir_path: str,
         ret, mask = cv2.threshold(mask_img, 1, 255, cv2.THRESH_BINARY)
 
         # Run through each bbox in the image
-        for bbox in annotation_data.bounding_boxes[img_name]:
+        for bbox in annotation_data.bbox_map[img_name]:
             
             # Check class id
             class_id = bbox.get_class_id()
@@ -116,6 +120,8 @@ def crop_defects(tmk_dir_path: str,
             # Save crop in save_dir
             cv2.imwrite(os.path.join(save_dir, f'{crop_counter}.jpg'), masked_img)
             print(crop_counter)
+    
+    return crop_counters
 
 
 def get_masked_img(bbox: BoundingBox, final_img: np.ndarray, mask: np.ndarray) -> np.ndarray:
