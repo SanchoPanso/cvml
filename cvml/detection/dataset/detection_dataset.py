@@ -1,4 +1,5 @@
 import os
+import sys
 import cv2
 import random
 import math
@@ -6,9 +7,10 @@ import numpy as np
 from abc import ABC
 from typing import List, Set, Dict, Callable
 from enum import Enum
+import logging
 
 from cvml.core.bounding_box import BoundingBox
-from .io_handling import write_yolo_labels, read_yolo_labels
+from cvml.detection.dataset.annotation_converter import write_yolo_labels, read_yolo_labels
 from cvml.detection.dataset.annotation import Annotation
 from .image_source import ImageSource
 
@@ -48,6 +50,8 @@ class DetectionDataset:
         """
         self.labeled_images = labeled_images or []
         self.splits = splits or {}
+        
+        self.logger = self._get_logger()
 
     def __len__(self):
         return len(self.labeled_images)
@@ -114,6 +118,14 @@ class DetectionDataset:
 
             if i + 1 == num_of_names and split_end_idx < len(all_idx):
                 self.splits[split_name] += all_idx[split_end_idx: len(all_idx)]
+        
+        # logging
+        message = "In dataset the following splits was created: "
+        for i, split_name in enumerate(self.splits.keys()):
+            message += f"{split_name}({len(self.splits)})"
+            if i != len(self.splits.keys()) - 1:
+                message += ", "
+        self.logger.info(message)
 
     def split_by_dataset(self, yolo_dataset_path: str):
 
@@ -151,11 +163,12 @@ class DetectionDataset:
             for i in split_idx:
                 images_dir = os.path.join(dataset_path, split_name, 'images')
                 labels_dir = os.path.join(dataset_path, split_name, 'labels')
-                print(self.labeled_images[i].name)
 
                 images_dir = images_dir if install_images else None
                 labels_dir = labels_dir if install_labels else None
                 self.labeled_images[i].save(images_dir, labels_dir)
+                
+                self.logger.info(f"In split \"{split_name}\" image \"{self.labeled_images[i].name}\" is processed")
     
     def exclude_by_names(self, excluding_names: Set[str], splits: List[str]):
         
@@ -167,6 +180,23 @@ class DetectionDataset:
 
                 if new_name in excluding_names:
                     self.splits[split].pop(i)
+    
+    def _get_logger(self) -> logging.Logger:
+        
+        logger = logging.getLogger(__name__)
+        
+        # Create handlers
+        s_handler = logging.StreamHandler(sys.stdout)
+        s_handler.setLevel(logging.INFO)
+        
+        # Create formatters and add it to handlers
+        s_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        s_handler.setFormatter(s_format)
+        
+        # Add handlers to the logger
+        logger.addHandler(s_handler)
+        
+        return logger
         
 
 
