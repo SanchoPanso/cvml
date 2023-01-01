@@ -6,59 +6,68 @@ import numpy as np
 
 
 class ImageReader(ABC):
-    def set_params(self, *args, **kwargs):
+    """Implementor of image reading functionality.
+    """
+    
+    def get_name(self, paths: List[str]) -> str:
+        """Return name for following save name based on original paths
+
+        Args:
+            paths (List[str]): source paths of images
+
+        Returns:
+            str: name
+        """
         pass
 
-    def get_name(self) -> str:
-        pass
+    def read(self, paths: List[str], preprocessing_fns: List[Callable]) -> np.ndarray:
+        """Read and preprocess image specifically 
 
-    def read(self) -> np.ndarray:
+        Args:
+            paths (List[str]): source paths of images
+            preprocessing_fns (List[Callable]): list of preprocessing functions
+
+        Returns:
+            np.ndarray: read and preprocessed image
+        """
         pass
 
 
 class SingleImageReader(ImageReader):
+    """Concrete implementor for reading a single image for a single image source
+    """
     def __init__(self):
-        self.path = None
-        self.preprocess_fn = None
+        pass
     
-    def get_name(self):
-        filename = os.path.split(self.path)[-1]
+    def get_name(self, paths: List[str]) -> str:
+        filename = os.path.split(paths[0])[-1]
         name, ext = os.path.splitext(filename)
         return name
-
-    def set_params(self, path: str, preprocess_fn: Callable = None):
-        self.path = path
-        self.preprocess_fn = preprocess_fn
     
-    def read(self) -> np.ndarray:
-        img = cv2.imdecode(np.fromfile(self.path, dtype=np.uint8), cv2.IMREAD_COLOR)
-        img = self.preprocess_fn(img)
+    def read(self, paths: List[str],  preprocessing_fns: List[Callable]) -> np.ndarray:
+        img = cv2.imdecode(np.fromfile(paths[0], dtype=np.uint8), cv2.IMREAD_COLOR)
+        img = preprocessing_fns[0](img)
         return img
 
 
 class MultipleImageReader(ImageReader):
-    def __init__(self):
-        self.paths = None
-        self.main_channel = None
-        self.preprocess_fns = None
-    
-    def get_name(self):
-        main_path = self.paths[self.main_channel]
+    """Concrete implementor for reading some images for a single image source
+    """
+    def __init__(self, main_channel: int = 0):
+        self.main_channel = main_channel
+        
+    def get_name(self, paths: List[str]) -> str:
+        main_path = paths[self.main_channel]
         filename = os.path.split(main_path)[-1]
         name, ext = os.path.splitext(filename)
         return name
 
-    def set_params(self, paths: List[str], main_channel: int = 0, preprocess_fns: List[Callable] = None):
-        self.paths = paths
-        self.main_channel = main_channel
-        self.preprocess_fns = [lambda x:x] * len(paths) if preprocess_fns is None else preprocess_fns
-
-    def read(self):
+    def read(self, paths: List[str], preprocessing_fns: List[Callable]) -> np.ndarray:
         imgs = []
-        for i in range(len(self.paths)):
-            img = cv2.imdecode(np.fromfile(self.paths[i], dtype=np.uint8), cv2.IMREAD_GRAYSCALE)
-            if self.preprocess_fns[i] is not None:
-                img = self.preprocess_fns[i](img)
+        for i in range(len(paths)):
+            img = cv2.imdecode(np.fromfile(paths[i], dtype=np.uint8), cv2.IMREAD_GRAYSCALE)
+            if preprocessing_fns[i] is not None:
+                img = preprocessing_fns[i](img)
             imgs.append(img)
 
         final_img = cv2.merge(imgs)
@@ -66,6 +75,11 @@ class MultipleImageReader(ImageReader):
 
 
 class ImageSource(ABC):
+    """Abstraction of image source
+    """
+    def __init__(self, paths: List[str], preprocessing_fn: List[Callable], image_reader: ImageReader):
+        pass
+    
     def get_name(self) -> str:
         pass
 
@@ -74,27 +88,38 @@ class ImageSource(ABC):
 
 
 class DetectionImageSource(ImageSource):
-    def __init__(self, image_reader: ImageReader, *args, **kwargs):
+    """Refined abstraction of ImageSource for detection dataset
+    """
+    def __init__(self, paths: List[str], preprocessing_fns: List[Callable], image_reader: ImageReader):
+        
+        if len(paths) == 0:
+            raise ValueError("List path is empty.")
+        if len(paths) != len(preprocessing_fns):
+            raise ValueError("Number of paths is not equal to number of preprocessing_fns")
+         
+        self.paths = paths
+        self.preprocessing_fns = preprocessing_fns
         self.image_reader = image_reader
-        self.image_reader.set_params(*args, **kwargs)
 
     def get_name(self):
-        return self.image_reader.get_name()
+        return self.image_reader.get_name(self.paths)
 
-    def read(self) -> np.ndarray:
-        return self.image_reader.read()
+    def _read(self) -> np.ndarray:
+        return self.image_reader.read(self.paths, self.preprocessing_fns)
     
-    def write(self, path: str, img: np.ndarray):
+    def _write(self, path: str, img: np.ndarray):
         ext = os.path.splitext(os.path.split(path)[-1])[1]
         is_success, im_buf_arr = cv2.imencode(ext, img)
         im_buf_arr.tofile(path)
     
     def save(self, path: str):
-        img = self.read()
-        self.write(path, img)
+        img = self._read()
+        self._write(path, img)
 
 
-def convert_paths_to_sources(paths: List[List[str]], preprocess_fns: List[Callable], main_channel: int):
+def convert_paths_to_multiple_sources(paths: List[List[str]], 
+                                      preprocess_fns: List[Callable], 
+                                      main_channel: int) -> List[ImageSource]:
 
     if len(paths) == 0 or len(paths[0]) == 0:
         return []
@@ -107,15 +132,28 @@ def convert_paths_to_sources(paths: List[List[str]], preprocess_fns: List[Callab
     num_of_channels = len(paths)
     num_of_sources = len(paths[0])
 
+    image_reader = MultipleImageReader(main_channel)
     for i in range(num_of_sources):
         cur_paths = [paths[channel][i] for channel in range(num_of_channels)]
-        image_source = DetectionImageSource(MultipleImageReader(), cur_paths, main_channel, preprocess_fns)
+        image_source = DetectionImageSource(cur_paths, preprocess_fns, image_reader)
         image_sources.append(image_source)
 
     return image_sources
 
 
+def convert_paths_to_single_sources(paths: List[str], 
+                                    preprocess_fn: Callable) -> List[ImageSource]:
+    
+    image_sources = []
+    image_reader = SingleImageReader()
+    for i, path in enumerate(paths):
+        image_source = DetectionImageSource([path], [preprocess_fn], image_reader)
+        image_sources.append(image_source)
 
+    return image_sources
+
+
+# old
 def convert_single_paths_to_sources(paths: List[str], preprocess_fn: Callable):
     
     image_sources = []
