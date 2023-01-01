@@ -9,7 +9,8 @@ from cvml.detection.dataset.annotation import Annotation
 class AnnotationConverter:
     def __init__(self):
         pass
-
+    
+    @classmethod
     def read_coco(self, path: str) -> Annotation:
         """
         :path: absolute path to json file with coco annotation
@@ -47,6 +48,7 @@ class AnnotationConverter:
         annotation = Annotation(classes_list, bb_dict)
         return annotation
 
+    @classmethod
     def write_coco(self, annotation: Annotation, path: str, image_ext: str = '.jpg'):
         """
         :annotation: annotation to convert
@@ -80,6 +82,7 @@ class AnnotationConverter:
         with open(path, 'w') as f:
             json.dump(coco, f)
     
+    @classmethod
     def read_bboxes(self, bboxes: List[BoundingBox], classes: List[str]) -> Annotation:
         """
         :bboxes: list of bounding boxes to convert into an annotation
@@ -98,6 +101,7 @@ class AnnotationConverter:
         annotation = Annotation(classes, bb_dict)
         return annotation
     
+    @classmethod
     def read_yolo(self, path: str, classes: List[str] = None, data_yaml_path: str = None) -> Annotation:
         """
         :path: absolute path to labels dir with txt-files of yolo annotation
@@ -125,7 +129,7 @@ class AnnotationConverter:
         
         annotation = Annotation(classes, bb_dict)
         return annotation
-
+    
     def _get_classes_from_coco(self, coco_dict: dict) -> dict:
         categories = coco_dict['categories']
         result = {}

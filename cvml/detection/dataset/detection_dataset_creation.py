@@ -8,7 +8,7 @@ from typing import Callable, List
 
 from cvml.detection.dataset.detection_dataset import DetectionDataset, LabeledImage
 from cvml.detection.dataset.annotation_converter import AnnotationConverter
-from cvml.detection.dataset.label_editor import AnnotationEditor
+from cvml.detection.dataset.annotation_editor import AnnotationEditor
 
 from cvml.detection.dataset.image_transforming import expo
 from cvml.detection.dataset.image_source import convert_paths_to_single_sources
@@ -33,12 +33,9 @@ def create_detection_dataset(
     install_labels: bool = True,
 ):
     
-    converter = AnnotationConverter()
-    editor = AnnotationEditor()
     final_dataset = DetectionDataset()
     
     for dataset_dir in source_dirs:
-        
         dataset = DetectionDataset()
 
         image_dir = os.path.join(dataset_dir, 'images')
@@ -51,10 +48,10 @@ def create_detection_dataset(
                                                         preprocess_fn=convert_to_mixed)
 
         annotation_path = os.path.join(dataset_dir, 'annotations', 'instances_default.json')
-        renamer = lambda x: x + '_' + os.path.split(dataset_dir)[-1]
+        renamer = lambda x: os.path.split(dataset_dir)[-1] + '_' + x
 
-        annotation_data = converter.read_coco(annotation_path)
-        annotation_data = editor.change_classes_by_id(annotation_data, changes)
+        annotation_data = AnnotationConverter.read_coco(annotation_path)
+        annotation_data = AnnotationEditor.change_classes_by_id(annotation_data, changes)
 
         dataset.update(image_sources, annotation_data)
         dataset.rename(renamer)
@@ -75,20 +72,8 @@ if __name__ == '__main__':
     
     result_dir = '/home/student2/datasets/prepared/tmk_cvs3_yolov5_17122022'
     
-    changes = {
-        0: None,    # comet 
-        1: 1,       # other
-        2: None,    # joint 
-        3: None,    # number
-        4: 4,       # tube
-        5: 5,       # sink
-        6: None,    # birdhouse
-        7: None,    # print
-        8: 8,       # riska
-        9: None,       # deformation defect
-        10: None,     # continuity violation
-    }
+    cls_names = ['other', 'tube', 'sink', 'riska']
     split_proportions = {'train': 0.8, 'valid': 0.2, 'test': 0.0}
     
-    create_detection_dataset(raw_dirs, result_dir, changes, split_proportions)
+    create_detection_dataset(raw_dirs, result_dir, cls_names, split_proportions)
 

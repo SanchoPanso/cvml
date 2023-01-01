@@ -7,8 +7,11 @@ from cvml.detection.dataset.annotation_converter import Annotation
 class AnnotationEditor:
     def __init__(self):
         pass
-
+    
+    @classmethod
     def change_classes_by_id(self, annotation: Annotation, id_changes: Dict[int, int or None]) -> Annotation:
+        """Change classes in annotation. Only classes, noted in id_changes, will be changed
+        """
         new_annotation = Annotation()
         
         for image_name in annotation.bbox_map.keys():
@@ -26,7 +29,7 @@ class AnnotationEditor:
         
         return new_annotation
 
-
+    @classmethod
     def get_changed_class_id(self, class_id: int, id_changes: Dict[int, int or None]) -> int:
         if class_id in id_changes.keys():
             if id_changes[class_id] is None:
@@ -34,8 +37,39 @@ class AnnotationEditor:
             else:
                 return id_changes[class_id]
         return class_id
+    
+    @classmethod
+    def change_classes_by_names(self, annotation: Annotation, name_changes: Dict[str, str or None]) -> Annotation:
+        raise NotImplementedError
+    
+    @classmethod
+    def change_classes_by_new_classes(cls, annotation: Annotation, new_classes: List[str]) -> Annotation:
+        
+        new_annotation = Annotation(classes=new_classes)
+        new_id_dict = {new_cls_name: i for i, new_cls_name in enumerate(new_classes)}
+        
+        for image_name in annotation.bbox_map.keys():
+            new_annotation.bbox_map[image_name] = []
+            bboxes = annotation.bbox_map[image_name]
+
+            for bbox in bboxes:
+                cls_id = bbox.get_class_id()
+                cls_name = annotation.classes[cls_id]
+                
+                if cls_name not in new_classes:
+                    continue
+                
+                new_cls_id = new_id_dict[cls_name]
+                
+                new_bbox = bbox.clone()
+                new_bbox._class_id = new_cls_id # Change
+                new_annotation.bbox_map[image_name].append(bbox)
+        
+        return new_annotation
 
 
+
+# Replace
 class LabelEditor:
     def __init__(self):
         pass
