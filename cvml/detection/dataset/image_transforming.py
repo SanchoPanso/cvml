@@ -1,40 +1,60 @@
 import numpy as np
 import cv2
 import math
+import torch
+from cvml.detection.augmentation.sp_estimator import SPEstimator
 
 
 def expo(img: np.ndarray, step: int) -> np.ndarray:
-    img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV_FULL)     # convert rgb to hsv
-    lut = get_gamma_expo(step)                          # get look-up table (array) of 256 elems
-    hsv = cv2.split(img)                                # get tuple of 3 channels of hsv-format
-    hsv = (hsv[0], hsv[1], cv2.LUT(hsv[2], lut))        # apply look-up table transform for the value channel
-    img = cv2.merge(hsv)                                # merge channels to img 
-    img = cv2.cvtColor(img, cv2.COLOR_HSV2RGB_FULL)     # convert back to rgb format
+    
+    lut = np.zeros((256,), dtype='uint8')
+    for i in range(256):
+        lut[i] = i + math.sin(i * 0.01255) * step * 10
+        lut[i] = max(0, min(255, lut[i]))
 
+    if len(img.shape) == 2: # Grayscale case
+        img = cv2.LUT(img, lut)
+        
+    else:   # RGB case
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+        
+        hsv = cv2.split(img)
+        hsv = (hsv[0], hsv[1], cv2.LUT(hsv[2], lut))   
+             
+        img = cv2.merge(hsv)                                 
+        img = cv2.cvtColor(img, cv2.COLOR_HSV2RGB)     
+                
     return img
 
 
-def get_gamma_expo(step: int) -> np.ndarray:
-    """get look-up table"""
-
-    result = np.zeros((256,), dtype='uint8')
-
-    for i in range(256):
-        result[i] = add_double_to_byte(i, math.sin(i * 0.01255) * step * 10)
-
-    return result
+def normalize_min_max(data):
+    data_min = data.min()
+    data_max = data.max()
+    norm_data = (data-data_min)/(data_max-data_min)
+    return norm_data
 
 
-def add_double_to_byte(bt: int, d: float) -> int:
-    """summarize in range of (0, 255)"""
-    result = bt
-    if float(result) + d > 255:
-        result = 255
-    elif float(result) + d < 0:
-        result = 0
-    else:
-        result += d
-    return result
+def convert_to_mixed(orig_img: np.ndarray) -> np.ndarray:
+
+    height, width = orig_img.shape[0:2]
+    img = cv2.cvtColor(orig_img, cv2.COLOR_BGR2GRAY)
+    in_data = torch.from_numpy(img).float() #torch.frombuffer(orig_img.data, dtype=torch.uint8, count=img.size).float().detach_().reshape(height, width)
+    
+    estimator = SPEstimator()
+    rho, phi = estimator.getAzimuthAndPolarization(in_data)
+    
+    normalized_rho = normalize_min_max(rho)
+    normalized_phi = normalize_min_max(phi)
+
+    rho_img = (normalized_rho * 255).numpy().astype('uint8')
+    phi_img = (normalized_phi * 255).numpy().astype('uint8')
+
+    img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+    gray_img = expo(img, 15)
+    gray_img = cv2.cvtColor(gray_img, cv2.COLOR_BGR2GRAY)
+
+    img = cv2.merge([phi_img, rho_img, gray_img])
+    return img
 
 
 def get_lines(img: np.ndarray):
