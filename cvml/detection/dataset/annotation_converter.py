@@ -130,6 +130,7 @@ class AnnotationConverter:
         annotation = Annotation(classes, bb_dict)
         return annotation
     
+    @classmethod
     def _get_classes_from_coco(self, coco_dict: dict) -> dict:
         categories = coco_dict['categories']
         result = {}
@@ -142,6 +143,7 @@ class AnnotationConverter:
             }
         return result
 
+    @classmethod
     def _get_images_from_coco(self, coco_dict: dict) -> dict:
         images = coco_dict['images']
         result = {}
@@ -158,6 +160,7 @@ class AnnotationConverter:
             }
         return result
 
+    @classmethod
     def _get_bboxes_from_coco(self, coco_dict: dict) -> dict:
         annotations = coco_dict['annotations']
         result = {}
@@ -176,6 +179,7 @@ class AnnotationConverter:
             }
         return result
 
+    @classmethod
     def get_bounding_box_from_coco_data(self, bbox_id: str, classes: dict, images: dict, bboxes: dict) -> BoundingBox:
         bbox = bboxes[bbox_id]['bbox']
         image_id = bboxes[bbox_id]['image_id']
@@ -201,6 +205,7 @@ class AnnotationConverter:
 
         return bounding_box
 
+    @classmethod
     def _get_categories_from_annotation(self, annotation: Annotation) -> dict:
         categories = []
         for i, cls in enumerate(annotation.classes):
@@ -212,6 +217,7 @@ class AnnotationConverter:
             categories.append(category)
         return categories
 
+    @classmethod
     def _get_images_from_annotation(self, annotation: Annotation, image_ext: str) -> dict:
         
         images = []
@@ -234,6 +240,7 @@ class AnnotationConverter:
             images.append(image)
         return images
     
+    @classmethod
     def _get_bboxes_from_annotation(self, annotation: Annotation) -> dict:
         coco_annotations = []
         bbox_id = 1

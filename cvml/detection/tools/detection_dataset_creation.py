@@ -27,7 +27,7 @@ def wrap_expo(img: np.ndarray):
 def create_detection_dataset(
     source_dirs: List[str],
     save_dir: str,
-    changes: dict = None,
+    changes: List[str] = None,
     split_proportions: dict = None,
     install_images: bool = True,
     install_labels: bool = True,
@@ -51,7 +51,7 @@ def create_detection_dataset(
         renamer = lambda x: os.path.split(dataset_dir)[-1] + '_' + x
 
         annotation_data = AnnotationConverter.read_coco(annotation_path)
-        annotation_data = AnnotationEditor.change_classes_by_id(annotation_data, changes)
+        annotation_data = AnnotationEditor.change_classes_by_new_classes(annotation_data, changes)
 
         dataset.update(image_sources, annotation_data)
         dataset.rename(renamer)
@@ -70,7 +70,7 @@ if __name__ == '__main__':
     raw_dirs = glob.glob(os.path.join(raw_datasets_dir, '*SCV3*'))
     raw_dirs.sort()
     
-    result_dir = '/home/student2/datasets/prepared/tmk_cvs3_yolov5_17122022'
+    result_dir = '/home/student2/datasets/prepared/tmk_cvs3_yolov5_03012023'
     
     cls_names = ['other', 'tube', 'sink', 'riska']
     split_proportions = {'train': 0.8, 'valid': 0.2, 'test': 0.0}
