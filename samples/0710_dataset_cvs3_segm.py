@@ -11,7 +11,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from cvml.detection.dataset.image_source import MultipleImageReader
 from cvml.instance_segmentation.dataset.instance_segmentation_dataset import ISDataset, ISImageSource
 from cvml.detection.dataset.annotation_converter import AnnotationConverter
-from cvml.detection.dataset.label_editor import AnnotationEditor
+from cvml.detection.dataset.annotation_editor import AnnotationEditor
 
 from cvml.detection.dataset.image_transforming import expo
 
