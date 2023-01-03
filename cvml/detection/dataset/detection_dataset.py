@@ -10,9 +10,9 @@ from enum import Enum
 import logging
 
 from cvml.core.bounding_box import BoundingBox
-from cvml.detection.dataset.annotation_converter import write_yolo_labels, read_yolo_labels
+from cvml.detection.dataset.annotation_converter import AnnotationConverter, write_yolo_labels, read_yolo_labels
 from cvml.detection.dataset.annotation import Annotation
-from .image_source import ImageSource
+from cvml.detection.dataset.image_source import ImageSource
 
 
 class LabeledImage:
@@ -42,7 +42,8 @@ class DetectionDataset:
 
     def __init__(self, 
                  labeled_images: List[LabeledImage] = None, 
-                 splits: Dict[str, List[int]] = None):
+                 splits: Dict[str, List[int]] = None,
+                 classes: List[str] = None):
         """
         :labeled_images: list of labeled images
         :splits: dict of lists of labeled images' indexes, which related to specific split
@@ -50,6 +51,7 @@ class DetectionDataset:
         """
         self.labeled_images = labeled_images or []
         self.splits = splits or {}
+        self.classes = classes or []
         
         self.logger = self._get_logger()
 
@@ -74,13 +76,14 @@ class DetectionDataset:
             if name in other_split_names:
                 sum_splits[name] += list(map(lambda x: x + len(self), other.splits[name]))
         
-        return DetectionDataset(sum_labeled_images, sum_splits)
+        return DetectionDataset(sum_labeled_images, sum_splits, self.classes)
 
     def update(self, image_sources: List[ImageSource] = None,
                annotation: Annotation = None):
         
         image_sources = image_sources or []
         annotation = annotation or Annotation()
+        self.classes = annotation.classes
 
         for image_source in image_sources:
             source_name = image_source.get_name()
@@ -153,22 +156,41 @@ class DetectionDataset:
                 if new_name in orig_names_set:
                     self.splits[split_name].append(i)
 
-    def install(self, dataset_path: str, install_images: bool = True, install_labels: bool = True):
+    def install(self, 
+                dataset_path: str, 
+                install_images: bool = True, 
+                install_labels: bool = True, 
+                install_annotations: bool = True, 
+                install_description: bool = True):
+        
         for split_name in self.splits.keys():
             split_idx = self.splits[split_name]
 
             os.makedirs(os.path.join(dataset_path, split_name, 'images'), exist_ok=True)
             os.makedirs(os.path.join(dataset_path, split_name, 'labels'), exist_ok=True)
+            os.makedirs(os.path.join(dataset_path, split_name, 'annotations'), exist_ok=True)
 
+            images_dir = os.path.join(dataset_path, split_name, 'images') if install_images else None
+            labels_dir = os.path.join(dataset_path, split_name, 'labels') if install_labels else None
+            
+            split_bboxes_map = {}
             for i in split_idx:
-                images_dir = os.path.join(dataset_path, split_name, 'images')
-                labels_dir = os.path.join(dataset_path, split_name, 'labels')
-
-                images_dir = images_dir if install_images else None
-                labels_dir = labels_dir if install_labels else None
                 self.labeled_images[i].save(images_dir, labels_dir)
                 
+                if install_annotations:
+                    name = self.labeled_images[i].name
+                    bboxes = self.labeled_images[i].bboxes
+                    split_bboxes_map[name] = bboxes
+                
                 self.logger.info(f"In split \"{split_name}\" image \"{self.labeled_images[i].name}\" is processed")
+            
+            if install_annotations:
+                split_annotation = Annotation(self.classes, split_bboxes_map)
+                coco_path = os.path.join(dataset_path, split_name, 'annotations', f'{split_name}.json')
+                AnnotationConverter.write_coco(split_annotation, coco_path)
+            
+            if install_description:
+                self._write_description(os.path.join(dataset_path, 'data.yaml'))
     
     def exclude_by_names(self, excluding_names: Set[str], splits: List[str]):
         
@@ -197,6 +219,14 @@ class DetectionDataset:
         logger.addHandler(s_handler)
         
         return logger
+    
+    def _write_description(self, path: str):
+        text = f"train: ../train/images\n" \
+               f"val: ../valid/images\n\n" \
+               f"nc: {len(self.classes)}\n" \
+               f"names: {self.classes}"
+        with open(path, 'w') as f:
+            f.write(text)
         
 
 

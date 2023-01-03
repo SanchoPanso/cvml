@@ -61,7 +61,7 @@ class AnnotationEditor:
                 
                 new_cls_id = new_id_dict[cls_name]
                 
-                new_bbox = bbox.clone()
+                new_bbox = bbox
                 new_bbox._class_id = new_cls_id # Change
                 new_annotation.bbox_map[image_name].append(bbox)
         
