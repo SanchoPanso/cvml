@@ -6,6 +6,7 @@ import numpy as np
 import torch
 from typing import Callable, List
 
+import cvml.detection.dataset.detection_dataset
 from cvml.detection.dataset.detection_dataset import DetectionDataset, LabeledImage
 from cvml.detection.dataset.annotation_converter import AnnotationConverter
 from cvml.detection.dataset.annotation_editor import AnnotationEditor
@@ -57,6 +58,7 @@ def create_detection_dataset(
         dataset.rename(renamer)
 
         final_dataset += dataset
+
 
     final_dataset.split_by_proportions(split_proportions)
     final_dataset.install(save_dir, install_images, install_labels)

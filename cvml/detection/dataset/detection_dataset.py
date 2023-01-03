@@ -9,6 +9,7 @@ from typing import List, Set, Dict, Callable
 from enum import Enum
 import logging
 
+import time
 from cvml.core.bounding_box import BoundingBox
 from cvml.detection.dataset.annotation_converter import AnnotationConverter, write_yolo_labels, read_yolo_labels
 from cvml.detection.dataset.annotation import Annotation
@@ -125,7 +126,7 @@ class DetectionDataset:
         # logging
         message = "In dataset the following splits was created: "
         for i, split_name in enumerate(self.splits.keys()):
-            message += f"{split_name}({len(self.splits)})"
+            message += f"{split_name}({len(self.splits[split_name])})"
             if i != len(self.splits.keys()) - 1:
                 message += ", "
         self.logger.info(message)
@@ -206,6 +207,8 @@ class DetectionDataset:
     def _get_logger(self) -> logging.Logger:
         
         logger = logging.getLogger(__name__)
+        logger.handlers = []
+        logger.setLevel(logging.INFO)
         
         # Create handlers
         s_handler = logging.StreamHandler(sys.stdout)
