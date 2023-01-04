@@ -207,19 +207,20 @@ class DetectionDataset:
     def _get_logger(self) -> logging.Logger:
         
         logger = logging.getLogger(__name__)
-        logger.handlers = []
-        logger.setLevel(logging.INFO)
         
-        # Create handlers
-        s_handler = logging.StreamHandler(sys.stdout)
-        s_handler.setLevel(logging.INFO)
+        # logger.handlers = []
+        logger.setLevel(logging.DEBUG)
         
-        # Create formatters and add it to handlers
-        s_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        s_handler.setFormatter(s_format)
+        # # Create handlers
+        # s_handler = logging.StreamHandler(sys.stdout)
+        # s_handler.setLevel(logging.INFO)
         
-        # Add handlers to the logger
-        logger.addHandler(s_handler)
+        # # Create formatters and add it to handlers
+        # s_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        # s_handler.setFormatter(s_format)
+        
+        # # Add handlers to the logger
+        # logger.addHandler(s_handler)
         
         return logger
     
