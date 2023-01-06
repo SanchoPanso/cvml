@@ -111,7 +111,7 @@ if __name__ == '__main__':
         print(len(final_dataset))
     
     final_dataset.split_by_dataset(r'D:\datasets\tmk_yolov5_21092022')
-    print(final_dataset.splits)
+    print(final_dataset.samples)
     # dataset.splits['train'] = []
     final_dataset.install(result_dir, install_images=False)
 

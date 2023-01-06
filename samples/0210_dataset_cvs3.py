@@ -111,7 +111,7 @@ if __name__ == '__main__':
     result_dir = '/home/student2/datasets/tmk_cvs3_yolov5_02102022'
     # final_dataset.split_by_proportions({'train': 0.7, 'valid': 0.2, 'test': 0.1})
     final_dataset.split_by_dataset(result_dir)
-    for idx in final_dataset.splits['valid']:
+    for idx in final_dataset.samples['valid']:
         lbl_img = final_dataset[idx]
         bboxes = lbl_img.bboxes
         name = lbl_img.name

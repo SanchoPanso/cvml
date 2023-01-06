@@ -122,9 +122,9 @@ if __name__ == '__main__':
         final_dataset += dataset
 
     result_dir = '/home/student2/datasets/prepared/tmk_cvs1_yolov5_18112022'
-    print(len(final_dataset.splits['train']))
-    print(len(final_dataset.splits['valid']))
-    print(len(final_dataset.splits['test']))
+    print(len(final_dataset.samples['train']))
+    print(len(final_dataset.samples['valid']))
+    print(len(final_dataset.samples['test']))
     
     final_dataset.install(result_dir)
         

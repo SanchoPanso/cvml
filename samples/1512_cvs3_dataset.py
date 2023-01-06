@@ -138,12 +138,12 @@ if __name__ == '__main__':
     result_dir = '/home/student2/datasets/prepared/tmk_cvs3_yolov5_17122022'
     final_dataset.split_by_proportions({'train': 0.8, 'valid': 0.2, 'test': 0.0})
 
-    print(len(final_dataset.splits['train']))
-    print(len(final_dataset.splits['valid']))
-    print(len(final_dataset.splits['test']))
+    print(len(final_dataset.samples['train']))
+    print(len(final_dataset.samples['valid']))
+    print(len(final_dataset.samples['test']))
 
     valid_cnt = {}
-    for i in final_dataset.splits['valid']:
+    for i in final_dataset.samples['valid']:
         lbl_img = final_dataset.labeled_images[i]
         for bb in lbl_img.bboxes:
             cls_id = bb.get_class_id() 
@@ -153,7 +153,7 @@ if __name__ == '__main__':
                 valid_cnt[cls_id] = 1
 
     train_cnt = {}
-    for i in final_dataset.splits['train']:
+    for i in final_dataset.samples['train']:
         lbl_img = final_dataset.labeled_images[i]
         for bb in lbl_img.bboxes:
             cls_id = bb.get_class_id() 
