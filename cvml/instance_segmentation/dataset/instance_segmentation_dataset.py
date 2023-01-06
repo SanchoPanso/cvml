@@ -84,7 +84,7 @@ class ISDataset(DetectionDataset):
         sum_labeled_images = self.labeled_images + other.labeled_images
         sum_classes = self.classes
         
-        self_split_names = set(self.splits.keys())
+        self_split_names = set(self.samples.keys())
         other_split_names = set(other.splits.keys())
         sum_split_names = self_split_names or other_split_names
         sum_splits = {}
@@ -92,7 +92,7 @@ class ISDataset(DetectionDataset):
         for name in sum_split_names:
             sum_splits[name] = []
             if name in self_split_names:
-                sum_splits[name] += self.splits[name]
+                sum_splits[name] += self.samples[name]
             if name in other_split_names:
                 sum_splits[name] += list(map(lambda x: x + len(self), other.splits[name]))
         
@@ -138,8 +138,8 @@ class ISDataset(DetectionDataset):
     def install(self, dataset_path: str, install_images: bool = True, install_annotations: bool = True):
         
         converter = AnnotationConverter()
-        for split_name in self.splits.keys():
-            split_idx = self.splits[split_name]
+        for split_name in self.samples.keys():
+            split_idx = self.samples[split_name]
 
             images_dir = os.path.join(dataset_path, split_name, 'images')
             annotations_dir = os.path.join(dataset_path, split_name, 'annotations')

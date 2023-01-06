@@ -77,10 +77,9 @@ class MultipleImageReader(ImageReader):
 class ImageSource(ABC):
     """Abstraction of image source
     """
-    def __init__(self, paths: List[str], preprocessing_fn: List[Callable], image_reader: ImageReader):
-        pass
+    name = None
     
-    def get_name(self) -> str:
+    def __init__(self, paths: List[str], preprocessing_fn: List[Callable], image_reader: ImageReader, name: str = None):
         pass
 
     def save(self, path: str):
@@ -90,7 +89,7 @@ class ImageSource(ABC):
 class DetectionImageSource(ImageSource):
     """Refined abstraction of ImageSource for detection dataset
     """
-    def __init__(self, paths: List[str], preprocessing_fns: List[Callable], image_reader: ImageReader):
+    def __init__(self, paths: List[str], preprocessing_fns: List[Callable], image_reader: ImageReader, name: str = None):
         
         if len(paths) == 0:
             raise ValueError("List path is empty.")
@@ -100,9 +99,10 @@ class DetectionImageSource(ImageSource):
         self.paths = paths
         self.preprocessing_fns = preprocessing_fns
         self.image_reader = image_reader
+        self.name = name or self.image_reader.get_name(self.paths) 
 
-    def get_name(self):
-        return self.image_reader.get_name(self.paths)
+    # def get_name(self):
+    #     return self.image_reader.get_name(self.paths)
 
     def _read(self) -> np.ndarray:
         return self.image_reader.read(self.paths, self.preprocessing_fns)

@@ -37,8 +37,7 @@ def create_detection_dataset(
     final_dataset = DetectionDataset()
     
     for dataset_dir in source_dirs:
-        dataset = DetectionDataset()
-
+        
         image_dir = os.path.join(dataset_dir, 'images')
         all_files = glob.glob(os.path.join(image_dir, '*'))
         color_masks_files = glob.glob(os.path.join(image_dir, '*color_mask*'))
@@ -54,7 +53,7 @@ def create_detection_dataset(
         annotation_data = AnnotationConverter.read_coco(annotation_path)
         annotation_data = AnnotationEditor.change_classes_by_new_classes(annotation_data, changes)
 
-        dataset.update(image_sources, annotation_data)
+        dataset = DetectionDataset(image_sources, annotation_data)
         dataset.rename(renamer)
 
         final_dataset += dataset

@@ -102,12 +102,20 @@ class AnnotationConverter:
         return annotation
     
     @classmethod
-    def read_yolo(self, path: str, classes: List[str] = None, data_yaml_path: str = None) -> Annotation:
-        """
+    def read_yolo(self, path: str, img_size: tuple, classes: List[str] = None, data_yaml_path: str = None) -> Annotation:
+        """_summary_
+
+        :param path: _description_
+        :param img_size: _description_
+        :param classes: _description_, defaults to None
+        :param data_yaml_path: _description_, defaults to None
+        :return: _description_
+        
         :path: absolute path to labels dir with txt-files of yolo annotation
+        :img_size:
         :classes: list of class names
         :data_yaml_path: path to data.yaml in yolo dataset
-        :return: annotation extracted from these files  
+        :return: annotation extracted from these files
         """
         max_cls_id = -1
         txt_files = os.listdir(path) 
@@ -129,6 +137,12 @@ class AnnotationConverter:
         
         annotation = Annotation(classes, bb_dict)
         return annotation
+    
+    @classmethod
+    def write_yolo(self, annotation: Annotation, path: str):
+        for image_name in annotation.bbox_map:
+            bboxes = annotation.bbox_map[image_name]
+            write_yolo_labels(os.path.join(path, image_name + '.txt'), bboxes)
     
     @classmethod
     def _get_classes_from_coco(self, coco_dict: dict) -> dict:
