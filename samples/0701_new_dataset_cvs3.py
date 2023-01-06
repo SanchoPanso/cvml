@@ -4,8 +4,8 @@ import glob
 import logging
 
 sys.path.append(os.path.dirname(__file__) + '/..')
+from cvml.tools.create_dataset import create_tubes_detection_dataset
 
-from cvml.tools.create_dataset import create_detection_dataset
 
 raw_datasets_dir = 'D:\\Работа\\СКЗ\\datasets'
 raw_dirs = glob.glob(os.path.join(raw_datasets_dir, '*SCV3*'))
@@ -30,5 +30,5 @@ s_handler.setFormatter(s_format)
 # Add handlers to the logger
 cvml_logger.addHandler(s_handler)
 
-create_detection_dataset(raw_dirs, result_dir, cls_names, split_proportions)
+create_tubes_detection_dataset(raw_dirs, result_dir, cls_names, split_proportions)
 
