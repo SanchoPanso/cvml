@@ -7,11 +7,11 @@ sys.path.append(os.path.dirname(__file__) + '/..')
 from cvml.tools.create_dataset import create_tubes_detection_dataset
 
 
-raw_datasets_dir = 'D:\\Работа\\СКЗ\\datasets'
-raw_dirs = glob.glob(os.path.join(raw_datasets_dir, '*SCV3*'))
+raw_datasets_dir = '/home/student2/datasets/raw/TMK_CVS3/*1'
+raw_dirs = glob.glob(os.path.join(raw_datasets_dir))
 raw_dirs.sort()
 
-result_dir = 'D:\\Работа\\СКЗ\\datasets\\test_cvs3'
+result_dir = '/home/student2/datasets/prepared/TMK_CVS3_0701'
 
 cls_names = ['other', 'tube', 'sink', 'riska']
 split_proportions = {'train': 0.8, 'valid': 0.2, 'test': 0.0}

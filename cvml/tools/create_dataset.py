@@ -83,7 +83,7 @@ def create_tubes_detection_dataset(
         if os.name == 'posix':
             for sample_name in sample_proportions:
                 sample_path = os.path.join(save_dir, sample_name)
-                os.system(f"zip -r {sample_path}.zip {sample_path}")
+                os.system(f" cd {save_dir}; zip -r {sample_name}.zip {sample_name}/*")
                 os.system(f"split {sample_path}.zip {sample_path}.zip.part_ -b 999MB")
         elif os.name == 'nt':
             os.system("echo Zip not Implemented")    # TODO
