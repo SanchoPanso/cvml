@@ -105,16 +105,10 @@ class AnnotationConverter:
     def read_yolo(self, path: str, img_size: tuple, classes: List[str] = None, data_yaml_path: str = None) -> Annotation:
         """_summary_
 
-        :param path: _description_
+        :param path: absolute path to labels dir with txt-files of yolo annotation
         :param img_size: _description_
-        :param classes: _description_, defaults to None
-        :param data_yaml_path: _description_, defaults to None
-        :return: _description_
-        
-        :path: absolute path to labels dir with txt-files of yolo annotation
-        :img_size:
-        :classes: list of class names
-        :data_yaml_path: path to data.yaml in yolo dataset
+        :param classes: list of class names, defaults to None
+        :param data_yaml_path: path to data.yaml in yolo dataset, defaults to None
         :return: annotation extracted from these files
         """
         max_cls_id = -1
@@ -124,7 +118,7 @@ class AnnotationConverter:
         # For each image in coco create an empty list of bounding boxes
         for file in txt_files:
             name, ext = os.path.splitext(file)
-            bboxes = read_yolo_labels(os.path.join(path, file))
+            bboxes = read_yolo_labels(os.path.join(path, file), img_size)
 
             for bb in bboxes:
                 max_cls_id = max(max_cls_id, bb.get_class_id())
@@ -295,7 +289,7 @@ def read_yolo_labels(path: str, img_size: tuple) -> List[BoundingBox]:
                 cls_id, xc, yc, w, h = row_data
                 # x = xc - w / 2
                 # y = yc - h / 2
-                cls_conf = None
+                cls_conf = 1.0
             else:  # 6
                 cls_id, xc, yc, w, h, cls_conf = row_data
                 # x = xc - w / 2

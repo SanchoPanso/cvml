@@ -7,7 +7,7 @@ import torch
 from typing import Callable, List
 
 import cvml.detection.dataset.detection_dataset
-from cvml.detection.dataset.detection_dataset import DetectionDataset, LabeledImage
+from cvml.detection.dataset.detection_dataset import DetectionDataset
 from cvml.detection.dataset.annotation_converter import AnnotationConverter
 from cvml.detection.dataset.annotation_editor import AnnotationEditor
 
