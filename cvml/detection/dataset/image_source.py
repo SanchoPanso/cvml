@@ -81,7 +81,10 @@ class ImageSource(ABC):
     
     def __init__(self, paths: List[str], preprocessing_fn: List[Callable], image_reader: ImageReader, name: str = None):
         pass
-
+    
+    def read(self) -> np.ndarray:
+        pass
+    
     def save(self, path: str):
         pass
 
@@ -104,7 +107,7 @@ class DetectionImageSource(ImageSource):
     # def get_name(self):
     #     return self.image_reader.get_name(self.paths)
 
-    def _read(self) -> np.ndarray:
+    def read(self) -> np.ndarray:
         return self.image_reader.read(self.paths, self.preprocessing_fns)
     
     def _write(self, path: str, img: np.ndarray):
@@ -113,7 +116,7 @@ class DetectionImageSource(ImageSource):
         im_buf_arr.tofile(path)
     
     def save(self, path: str):
-        img = self._read()
+        img = self.read()
         self._write(path, img)
 
 

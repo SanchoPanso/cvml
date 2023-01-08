@@ -194,7 +194,7 @@ class DetectionDataset:
         
         for split_name in self.samples.keys():
             split_idx = self.samples[split_name]    
-
+            
             if install_images:
                 images_dir = os.path.join(dataset_path, split_name, 'images')
                 os.makedirs(images_dir, exist_ok=True)
@@ -208,14 +208,16 @@ class DetectionDataset:
             if install_labels:
                 labels_dir = os.path.join(dataset_path, split_name, 'labels')
                 os.makedirs(labels_dir, exist_ok=True)
-                AnnotationConverter.write_yolo(self.annotation, labels_dir)
+                sample_annotation = self._get_sample_annotation(split_name)
+                AnnotationConverter.write_yolo(sample_annotation, labels_dir)
                 self.logger.info(f"In split \"{split_name}\" installing labels is complete")
             
             if install_annotations:
                 annotation_dir = os.path.join(dataset_path, split_name, 'annotations')
                 os.makedirs(annotation_dir, exist_ok=True)
                 coco_path = os.path.join(annotation_dir, f'{split_name}.json')
-                AnnotationConverter.write_coco(self.annotation, coco_path)
+                sample_annotation = self._get_sample_annotation(split_name)
+                AnnotationConverter.write_coco(sample_annotation, coco_path)
                 self.logger.info(f"In split \"{split_name}\" installing annotation is complete")
             
             if install_description:
@@ -233,8 +235,20 @@ class DetectionDataset:
                 if new_name in excluding_names:
                     self.samples[split].pop(i)
     
+    def _get_sample_annotation(self, sample_name: str) -> Annotation:
+        sample_classes = self.annotation.classes
+        sample_bbox_map = {}
+        
+        for i in self.samples[sample_name]:
+            image_source = self.image_sources[i]
+            name = image_source.name
+            sample_bbox_map[name] = self.annotation.bbox_map[name]
+        
+        sample_annotation = Annotation(sample_classes, sample_bbox_map)
+        return sample_annotation
+    
     def _write_description(self, path: str):
-        dataset_name = os.path.split(path)[-1]
+        dataset_name = os.path.dirname(path)
         text = f"train: /content/{dataset_name}/train/images\n" \
                f"val: /content/{dataset_name}/valid/images\n\n" \
                f"nc: {len(self.annotation.classes)}\n" \
