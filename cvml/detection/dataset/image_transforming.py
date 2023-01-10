@@ -9,8 +9,8 @@ def expo(img: np.ndarray, step: int) -> np.ndarray:
     
     lut = np.zeros((256,), dtype='uint8')
     for i in range(256):
-        lut[i] = i + math.sin(i * 0.01255) * step * 10
-        lut[i] = max(0, min(255, lut[i]))
+        lut_i = i + math.sin(i * 0.01255) * step * 10
+        lut[i] = int(max(0, min(255, lut_i)))
 
     if len(img.shape) == 2: # Grayscale case
         img = cv2.LUT(img, lut)
