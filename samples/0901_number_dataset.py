@@ -5,19 +5,17 @@ import logging
 
 sys.path.append(os.path.dirname(__file__) + '/..')
 from cvml.tools.create_dataset import create_tubes_detection_dataset
-from cvml.detection.augmentation.golf_augmentation import TubeAugmentation
+#from cvml.detection.augmentation.golf_augmentation import TubeAugmentation
 
 
-raw_datasets_dir = r'D:\Работа\СКЗ\datasets\SCV3_defects1'   # '/home/student2/datasets/raw/TMK_CVS3/*1'
+raw_datasets_dir = r'C:\Users\HP\Downloads\number_december1'   # '/home/student2/datasets/raw/TMK_CVS3/*1'
 raw_dirs = glob.glob(os.path.join(raw_datasets_dir))
 raw_dirs.sort()
 
-result_dir = r'D:\Работа\СКЗ\datasets\test_cvs3' #'/home/student2/datasets/prepared/TMK_CVS3_0701'
+result_dir = r'C:\Users\HP\Downloads\number_december1_reannot' #'/home/student2/datasets/prepared/TMK_CVS3_0701'
 
-cls_names = ['other', 'tube', 'sink', 'riska']
+cls_names = [str(i) for i in range(10)]
 split_proportions = {'train': 0.8, 'valid': 0.2, 'test': 0.0}
-
-tube_augmentation = TubeAugmentation()
 
 cvml_logger = logging.getLogger('cvml')
 
@@ -37,14 +35,14 @@ create_tubes_detection_dataset(
     save_dir=result_dir,
     classes=cls_names,
     sample_proportions=split_proportions,
-    use_polar=True,
+    use_polar=False,
     install_images=True,
     install_labels=True,
     install_annotations=True,
     install_description=True,
-    mask_mixup_augmentation=tube_augmentation,
-    augmentation_samples = ['train'],
-    crop_obj_dir=r'C:\Users\HP\Downloads\0210_defect_crops\0210_defect_crops',
-    crop_class_names=cls_names,
+    mask_mixup_augmentation=None,
+    augmentation_samples = None,
+    crop_obj_dir=None,
+    crop_class_names=None,
     create_compressed_samples=False,
 )
