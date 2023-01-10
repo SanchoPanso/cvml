@@ -79,7 +79,7 @@ class ImageSource(ABC):
     """
     name = None
     
-    def __init__(self, paths: List[str], preprocessing_fn: List[Callable], image_reader: ImageReader, name: str = None):
+    def __init__(self, paths: List[str] = None, preprocessing_fns: List[Callable] = None, image_reader: ImageReader = None, name: str = None):
         pass
     
     def read(self) -> np.ndarray:
@@ -92,7 +92,7 @@ class ImageSource(ABC):
 class DetectionImageSource(ImageSource):
     """Refined abstraction of ImageSource for detection dataset
     """
-    def __init__(self, paths: List[str], preprocessing_fns: List[Callable], image_reader: ImageReader, name: str = None):
+    def __init__(self, paths: List[str] = None, preprocessing_fns: List[Callable] = None, image_reader: ImageReader = None, name: str = None):
         
         if len(paths) == 0:
             raise ValueError("List path is empty.")

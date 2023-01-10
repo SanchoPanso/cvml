@@ -215,7 +215,7 @@ class DetectionDataset:
             if install_annotations:
                 annotation_dir = os.path.join(dataset_path, split_name, 'annotations')
                 os.makedirs(annotation_dir, exist_ok=True)
-                coco_path = os.path.join(annotation_dir, f'{split_name}.json')
+                coco_path = os.path.join(annotation_dir, 'data.json')
                 sample_annotation = self._get_sample_annotation(split_name)
                 AnnotationConverter.write_coco(sample_annotation, coco_path)
                 self.logger.info(f"In split \"{split_name}\" installing annotation is complete")
@@ -248,7 +248,7 @@ class DetectionDataset:
         return sample_annotation
     
     def _write_description(self, path: str):
-        dataset_name = os.path.dirname(path)
+        dataset_name = os.path.split(os.path.dirname(path))[-1]
         text = f"train: /content/{dataset_name}/train/images\n" \
                f"val: /content/{dataset_name}/valid/images\n\n" \
                f"nc: {len(self.annotation.classes)}\n" \
