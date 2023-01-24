@@ -28,6 +28,7 @@ def create_tubes_detection_dataset(
     save_dir: str,
     classes: List[str] = None,
     sample_proportions: dict = None,
+    template_dataset: str = None,
     use_polar: bool = True,
     install_images: bool = True,
     install_labels: bool = True,
@@ -88,7 +89,10 @@ def create_tubes_detection_dataset(
         final_dataset += dataset
 
     sample_proportions = sample_proportions or {}
-    final_dataset.split_by_proportions(sample_proportions)
+    if template_dataset is not None:
+        final_dataset.split_by_dataset(template_dataset)
+    else:    
+        final_dataset.split_by_proportions(sample_proportions)
     final_dataset.install(save_dir, install_images, install_labels, install_annotations, install_description)
     
     # mask_mixup_augmentation
@@ -118,7 +122,8 @@ def create_tubes_detection_dataset(
             aug_coco_sample_annotation = Annotation(final_dataset.annotation.classes, {})
             aug_yolo_sample_annotation = Annotation(final_dataset.annotation.classes, {})
             aug_image_sources = []
-            for idx in final_dataset.samples[sample]:
+
+            for i, idx in enumerate(final_dataset.samples[sample]):
                 
                 image_source = final_dataset.image_sources[idx]
                 aug_image_sources.append(image_source)
@@ -138,13 +143,16 @@ def create_tubes_detection_dataset(
                 new_name = name + '_aug'
                 
                 # install images separately for annotations
-                if install_images:
+                if True:#install_images:
                     imwrite(os.path.join(new_images_dir, new_name + '.jpg'), new_img)
                 
                 # Write new bboxes in new annotation
                 new_bboxes = labels_to_bboxes(new_labels, new_name, img.shape)
                 aug_coco_sample_annotation.bbox_map[new_name] = new_bboxes
                 aug_yolo_sample_annotation.bbox_map[new_name] = new_bboxes
+
+                # if i >= 250:
+                #     break
             
             if install_labels:
                 AnnotationConverter.write_coco(aug_coco_sample_annotation, os.path.join(new_annotations_dir, 'data.json'))

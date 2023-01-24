@@ -266,7 +266,7 @@ class MaskMixup:
                                          scale=0.45,
                                          shear=30,
                                          perspective=0.0,
-                                         scale_coef=0.6) -> np.ndarray:
+                                         scale_coef=1.0) -> np.ndarray:
         height = img_shape[0]
         width = img_shape[1]
 
@@ -529,7 +529,7 @@ def find_lines_by_params(dst, min_theta, max_theta, min_rho_delta, max_rho_delta
             theta2 = lines[j][0][1]
 
             if min_rho_delta <= rho2 - rho1 <= max_rho_delta:
-                print(rho1, rho2)
+                # print(rho1, rho2)
                 target_lines = [lines[i], lines[j]] 
                 break
 
