@@ -122,9 +122,12 @@ class DetectionDataset:
             self.image_sources[i].name = new_name
             
             # Rename in bbox_map
-            bboxes = self.annotation.bbox_map[old_name]
-            self.annotation.bbox_map.pop(old_name)
-            self.annotation.bbox_map[new_name] = bboxes
+            if old_name in self.annotation.bbox_map.keys():
+                bboxes = self.annotation.bbox_map[old_name]
+                self.annotation.bbox_map.pop(old_name)
+                self.annotation.bbox_map[new_name] = bboxes
+            else:
+                self.annotation.bbox_map[new_name] = []
             
             # Rename in bboxes
             for bb in self.annotation.bbox_map[new_name]:
@@ -180,8 +183,8 @@ class DetectionDataset:
 
             # If new_name in orig dataset split then update split indexes of current dataset
             self.samples[split_name] = []
-            for i, labeled_image in enumerate(self.labeled_images):
-                new_name = labeled_image.name
+            for i, image_source in enumerate(self.image_sources):
+                new_name = image_source.name
                 if new_name in orig_names_set:
                     self.samples[split_name].append(i)
 
