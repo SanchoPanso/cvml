@@ -13,8 +13,10 @@ def main():
         'cvs1_number2': 'number_2',
         'cvs1_number3': 'number_3',
     }
-    number_crop_dir = ''
-    datasets_dir = ''
+    number_crop_dir = '/home/student2/Downloads/gray_class'
+    datasets_dir = '/home/student2/datasets/raw'
+
+    match_cnt = 0
     
     for dataset_name in conformity.keys():
         dataset_dir = os.path.join(datasets_dir, dataset_name)
@@ -23,7 +25,7 @@ def main():
         new_annotation = Annotation([str(i) for i in range(9)], {})
         
         for image_name in annotation.bbox_map:
-            new_annotation[image_name] = []
+            new_annotation.bbox_map[image_name] = []
             bboxes = annotation.bbox_map[image_name]
             crop_cnt = 1
             
@@ -31,15 +33,20 @@ def main():
                 if bbox.get_class_id() != 3:    #CHECK
                     continue
                 old_dataset_name = conformity[dataset_name]
-                crop_name = f'{image_name}_{dataset_name}_{crop_cnt}'
+                crop_name = f'{image_name}_{old_dataset_name}_{crop_cnt}.png'
                 
                 for digit in range(9):
-                    if os.path.exists(os.path.join(number_crop_dir, digit, crop_name)):
+                    if os.path.exists(os.path.join(number_crop_dir, str(digit), crop_name)):
                         bbox._class_id = digit
-                        new_annotation[image_name].append(bbox)
+                        new_annotation.bbox_map[image_name].append(bbox)
+                        match_cnt += 1
+                        print(crop_name)
                         break
+                crop_cnt += 1
         
-        AnnotationConverter.write_coco(new_annotation, os.path.join(dataset_dir, 'annotataions', 'digits.json'))
+        AnnotationConverter.write_coco(new_annotation, os.path.join(dataset_dir, 'annotations', 'digits.json'), '.png')
+        print(match_cnt)
 
                 
-    
+if __name__ == '__main__':
+    main()
