@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Tuple
 
 
 class CoordinatesType(Enum):
@@ -69,11 +70,11 @@ def convertToAbsoluteValues(size, box):
 
 class BoundingBox:
     def __init__(self,
-                 class_id: int,
-                 x: float,
-                 y: float,
-                 w: float,
-                 h: float,
+                 class_id: int = 0,
+                 x: float = 0.0,
+                 y: float = 0.0,
+                 w: float = 0.0,
+                 h: float = 0.0,
                  class_confidence: float = None,
                  image_name: str = None,
                  type_coordinates: CoordinatesType = CoordinatesType.Absolute,
@@ -102,26 +103,81 @@ class BoundingBox:
             coordinates of the bounding boxes. BBFormat.XYWH: <left> <top> <width> <height>
             BBFormat.XYX2Y2: <left> <top> <right> <bottom>.
         """
-        self._image_name = image_name
-        self._type_coordinates = type_coordinates
-        if type_coordinates == CoordinatesType.Relative and img_size is None:
-            raise IOError(
-                'Parameter \'imgSize\' is required. It is necessary to inform the image size.')
+        
         if bb_type == BBType.Detected and class_confidence is None:
-            raise IOError(
+            raise ValueError(
                 'For bbType=\'Detection\', it is necessary to inform the classConfidence value.')
-        # if classConfidence != None and (classConfidence < 0 or classConfidence > 1):
-        # raise IOError('classConfidence value must be a real value between 0 and 1. Value: %f' %
-        # classConfidence)
+        
+        if class_confidence != None and (class_confidence < 0 or class_confidence > 1):
+            raise IOError('classConfidence value must be a real value between 0 and 1. Value: %f' %
+            class_confidence)
 
+        self._image_name = image_name
         self._class_confidence = class_confidence
         self._bb_type = bb_type
         self._class_id = class_id
-        self._format = format
+        
+        self.set_coordinates((x, y, w, h), format, type_coordinates, img_size)
+        self._segmentation = segmentation or []
 
+    def get_coordinates(self,
+                        coordinates_type: CoordinatesType = CoordinatesType.Absolute, 
+                        format: BBFormat = BBFormat.XYWH,
+                        img_size: tuple = None):
+        
+        if coordinates_type == CoordinatesType.Absolute:
+            return self.get_absolute_bounding_box(format)
+        return self.get_relative_bounding_box(img_size)
+    
+    def get_absolute_bounding_box(self, format=BBFormat.XYWH):
+        if format == BBFormat.XYWH:
+            return (self._x, self._y, self._w, self._h)
+        elif format == BBFormat.XYX2Y2:
+            return (self._x, self._y, self._x2, self._y2)
+
+    def get_relative_bounding_box(self, img_size=None):
+        if img_size is None and self._width_img is None and self._height_img is None:
+            raise ValueError(
+                'Parameter \'imgSize\' is required. It is necessary to inform the image size.')
+        if img_size is not None:
+            return convertToRelativeValues((img_size[0], img_size[1]),
+                                           (self._x, self._x2, self._y, self._y2))
+        else:
+            return convertToRelativeValues((self._width_img, self._height_img),
+                                           (self._x, self._x2, self._y, self._y2))
+
+    def get_image_name(self) -> str:
+        return self._image_name
+
+    def get_confidence(self) -> float:
+        return self._class_confidence
+
+    def get_class_id(self) -> int:
+        return self._class_id
+
+    def get_image_size(self) -> tuple:
+        return self._width_img, self._height_img
+
+    def get_bb_type(self) -> BBType:
+        return self._bb_type
+    
+    def get_segmentation(self):
+        return self._segmentation
+    
+    def set_coordinates(self,
+                        coordinates: Tuple[float],
+                        format=BBFormat.XYWH,
+                        coordinates_type=CoordinatesType.Absolute,
+                        img_size: tuple = None):
+        
+        if coordinates_type == CoordinatesType.Relative and img_size is None:
+            raise ValueError(
+                'Parameter \'imgSize\' is required. It is necessary to inform the image size.')
+        
         # If relative coordinates, convert to absolute values
         # For relative coords: (x,y,w,h)=(X_center/img_width , Y_center/img_height)
-        if (type_coordinates == CoordinatesType.Relative):
+        if (coordinates_type == CoordinatesType.Relative):
+            x, y, w, h = coordinates
             (self._x, self._y, self._w, self._h) = convertToAbsoluteValues(img_size, (x, y, w, h))
             self._width_img = img_size[0]
             self._height_img = img_size[1]
@@ -131,87 +187,64 @@ class BoundingBox:
                 self._w = self._x2 - self._x
                 self._h = self._y2 - self._y
             else:
-                raise IOError(
+                raise ValueError(
                     'For relative coordinates, the format must be XYWH (x,y,width,height)')
-        # For absolute coords: (x,y,w,h)=real bb coords
+        
+        # For absolute coords: (x,y,w,h) = real bb coords
         else:
-            self._x = x
-            self._y = y
             if format == BBFormat.XYWH:
+                x, y, w, h = coordinates
+                self._x = x
+                self._y = y
                 self._w = w
                 self._h = h
                 self._x2 = self._x + self._w
                 self._y2 = self._y + self._h
             else:  # format == BBFormat.XYX2Y2: <left> <top> <right> <bottom>.
-                self._x2 = w
-                self._y2 = h
-                self._w = self._x2 - self._x
-                self._h = self._y2 - self._y
+                x1, y1, x2, y2 = coordinates
+                self._x = x
+                self._y = y
+                self._x2 = x2
+                self._y2 = y2
+                self._w = x2 - x1
+                self._h = y2 - y1
+                
         if img_size is None:
             self._width_img = None
             self._height_img = None
         else:
             self._width_img = img_size[0]
             self._height_img = img_size[1]
-        
-        self._segmentation = segmentation or []
 
+    def set_image_name(self, image_name: str):
+        self._image_name = image_name
+
+    def set_confidence(self, confidence: float):
+        self._class_confidence = confidence
+
+    def set_class_id(self, class_id: int):
+        self._class_id = class_id
+
+    def set_image_size(self, image_size: tuple):
+        self._width_img, self._height_img = image_size
+
+    def set_bb_type(self, bb_type: BBType):
+        self._bb_type = bb_type
+    
+    def set_segmentation(self, segmentation):
+        self._segmentation = segmentation
+    
     def __str__(self):
         return f"BoundingBox(class_id = {self._class_id}, x = {self._x}, y = {self._y}, w = {self._w}, h = {self._h})"
 
-    def get_absolute_bounding_box(self, format=BBFormat.XYWH):
-        if format == BBFormat.XYWH:
-            return (self._x, self._y, self._w, self._h)
-        elif format == BBFormat.XYX2Y2:
-            return (self._x, self._y, self._x2, self._y2)
+    def __eq__(self, other):
+        det1BB = self.getAbsoluteBoundingBox()
+        det1ImgSize = self.getImageSize()
+        det2BB = other.getAbsoluteBoundingBox()
+        det2ImgSize = other.getImageSize()
 
-    def get_relative_bounding_box(self, img_size=None):
-        if img_size is None and self._width_img is None and self._height_img is None:
-            raise IOError(
-                'Parameter \'imgSize\' is required. It is necessary to inform the image size.')
-        if img_size is not None:
-            return convertToRelativeValues((img_size[0], img_size[1]),
-                                           (self._x, self._x2, self._y, self._y2))
-        else:
-            return convertToRelativeValues((self._width_img, self._height_img),
-                                           (self._x, self._x2, self._y, self._y2))
-
-    def get_segmentation(self):
-        return self._segmentation
-
-    def get_image_name(self):
-        return self._image_name
-
-    def get_confidence(self):
-        return self._class_confidence
-
-    def get_format(self):
-        return self._format
-
-    def get_class_id(self):
-        return self._class_id
-
-    def get_image_size(self):
-        return (self._width_img, self._height_img)
-
-    def get_coordinates_type(self):
-        return self._type_coordinates
-
-    def get_bb_type(self):
-        return self._bb_type
-
-    def set_segmentation(self, segmentation):
-        self._segmentation = segmentation
-
-    @staticmethod
-    def compare(det1, det2):
-        det1BB = det1.getAbsoluteBoundingBox()
-        det1ImgSize = det1.getImageSize()
-        det2BB = det2.getAbsoluteBoundingBox()
-        det2ImgSize = det2.getImageSize()
-
-        if det1.getClassId() == det2.getClassId() and \
-           det1.classConfidence == det2.classConfidenc() and \
+        if self.getClassId() == other.getClassId() and \
+           self.classConfidence == other.classConfidenc() and \
            det1BB[0] == det2BB[0] and \
            det1BB[1] == det2BB[1] and \
            det1BB[2] == det2BB[2] and \
@@ -221,20 +254,19 @@ class BoundingBox:
             return True
         return False
 
-    @staticmethod
-    def clone(boundingBox):
-        absBB = boundingBox.getAbsoluteBoundingBox(format=BBFormat.XYWH)
+    def clone(self):
+        absBB = self.get_absolute_bounding_box(format=BBFormat.XYWH)
         # return (self._x,self._y,self._x2,self._y2)
-        newBoundingBox = BoundingBox(boundingBox.getImageName(),
-                                     boundingBox.getClassId(),
+        newBoundingBox = BoundingBox(self.get_image_name(),
+                                     self.get_class_id(),
                                      absBB[0],
                                      absBB[1],
                                      absBB[2],
                                      absBB[3],
-                                     type_coordinates=boundingBox.getCoordinatesType(),
-                                     img_size=boundingBox.getImageSize(),
-                                     bb_type=boundingBox.getBBType(),
-                                     class_confidence=boundingBox.getConfidence(),
+                                     type_coordinates=CoordinatesType.Absolute,
+                                     img_size=self.get_image_size(),
+                                     bb_type=self.get_bb_type(),
+                                     class_confidence=self.get_confidence(),
                                      format=BBFormat.XYWH)
         return newBoundingBox
 
