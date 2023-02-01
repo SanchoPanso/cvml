@@ -139,6 +139,45 @@ class AnnotationConverter:
             write_yolo_labels(os.path.join(path, image_name + '.txt'), bboxes)
     
     @classmethod
+    def write_yolo_seg(self, annotation: Annotation, path: str):
+        
+        for image_name in annotation.bbox_map:
+            bboxes = annotation.bbox_map[image_name]
+            labels = []
+            
+            for bbox in bboxes:
+                segmentation = bbox.get_segmentation()
+                relative_segmentation = []
+                
+                if type(segmentation) == list:
+                    width, height = bbox.get_image_size()
+                    max_seg_contour = find_max_seg_contour(segmentation)
+                    for i in range(len(max_seg_contour)):
+                        if i % 2 == 0:
+                            x = segmentation[0][i] / width
+                            relative_segmentation.append(x)
+                        else:
+                            y = segmentation[0][i] / height
+                            relative_segmentation.append(y)
+
+                else:
+                    xc, yc, w, h = bbox.get_coordinates(coordinates_type=CoordinatesType.Relative)
+                    relative_segmentation = [
+                        xc - w/2, yc - h/2,
+                        xc - w/2, yc + h/2,
+                        xc + w/2, yc + h/2,
+                        xc + w/2, yc - h/2,
+                    ]
+                
+                label = [bbox.get_class_id()] + relative_segmentation
+                labels.append(label)
+
+            with open(os.path.join(path, image_name + '.txt'), 'w') as f:
+                for label in labels:
+                    f.write(' '.join(label) + '\n')
+                
+    
+    @classmethod
     def _get_classes_from_coco(self, coco_dict: dict) -> dict:
         categories = coco_dict['categories']
         result = {}
@@ -310,6 +349,26 @@ def write_yolo_labels(path: str, bboxes: List[BoundingBox]):
             xc, yc, w, h = bbox.get_relative_bounding_box()
             line = f"{cls_id} {xc} {yc} {w} {h}\n"
             f.write(line)
+
+def find_max_seg_contour(segmentation: list) -> list:
+    max_idx = 0
+    max_square = -1 
+    for i, contour in enumerate(segmentation):
+        xs = contour[0::2]
+        ys = contour[1::2]
+        
+        x_min = min(xs)
+        x_max = max(xs)
+        y_min = min(ys)
+        y_max = max(ys)
+        
+        square = (x_max - x_min) * (y_max - y_min)
+        
+        if square > max_square:
+            max_square = square
+            max_idx = i
+    
+    return segmentation[max_idx]
     
 
 
