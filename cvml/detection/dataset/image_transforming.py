@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 import math
 import torch
-from cvml.detection.augmentation.sp_estimator import SPEstimator
+from cvml.detection.augmentation.sp_estimator import SPEstimator, SPEstimatorNumpy
 
 
 def expo(img: np.ndarray, step: int) -> np.ndarray:
@@ -34,20 +34,20 @@ def normalize_min_max(data):
     return norm_data
 
 
-def convert_to_mixed(orig_img: np.ndarray) -> np.ndarray:
+def convert_to_mixed(orig_img: np.ndarray, estimator: SPEstimatorNumpy = None) -> np.ndarray:
 
     height, width = orig_img.shape[0:2]
     img = cv2.cvtColor(orig_img, cv2.COLOR_BGR2GRAY)
-    in_data = torch.from_numpy(img).float() #torch.frombuffer(orig_img.data, dtype=torch.uint8, count=img.size).float().detach_().reshape(height, width)
+    #in_data = torch.from_numpy(img).float() #torch.frombuffer(orig_img.data, dtype=torch.uint8, count=img.size).float().detach_().reshape(height, width)
     
-    estimator = SPEstimator()
-    rho, phi = estimator.getAzimuthAndPolarization(in_data)
+    estimator = estimator or SPEstimatorNumpy()
+    rho, phi = estimator.getAzimuthAndPolarization(img)
     
     normalized_rho = normalize_min_max(rho)
     normalized_phi = normalize_min_max(phi)
 
-    rho_img = (normalized_rho * 255).numpy().astype('uint8')
-    phi_img = (normalized_phi * 255).numpy().astype('uint8')
+    rho_img = (normalized_rho * 255).astype('uint8')
+    phi_img = (normalized_phi * 255).astype('uint8')
 
     img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
     gray_img = expo(img, 15)
