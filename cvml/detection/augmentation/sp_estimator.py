@@ -143,4 +143,102 @@ class SPEstimator:
         return arr
 
 
+
+class SPEstimatorNumpy:
+    def __init__(self):
+        self._spec = None
+        self._angles = np.array([0, 45, 90, 135], dtype=np.float64)
+        P = np.zeros((1, 4, 3), dtype=np.float64)
+        P[:, :, 0] = np.ones((4,), dtype=np.float64)
+        P[:, :, 1] = np.cos(self._angles * 2 * np.pi / 180)
+        P[:, :, 2] = np.sin(self._angles * 2 * np.pi / 180)
+        self._Pinv = np.linalg.pinv(P.squeeze(0))
+
+    def  getAzimuthAndPolarization(self, input: np.ndarray) -> tuple:
+        height = input.shape[0]
+        width = input.shape[1]
+
+        in_arr = input # np.array((ctypes.c_float*input.numel()).from_address(input.data_ptr())).reshape(input.shape)
+
+        a_arr = self.get_a_array(in_arr)
+        b_arr = self.get_b_array(in_arr)
+        c_arr = self.get_c_array(in_arr)
+        d_arr = self.get_d_array(in_arr)
+
+        print("data copied")
+
+        common_array = np.zeros((4, height, width), dtype=np.float32)
+        common_array[0] = np.array(a_arr.T.reshape(width, height),  order='F').reshape(height, width)
+        common_array[1] = np.array(b_arr.T.reshape(width, height),  order='F').reshape(height, width)
+        common_array[2] = np.array(c_arr.T.reshape(width, height),  order='F').reshape(height, width)
+        common_array[3] = np.array(d_arr.T.reshape(width, height),  order='F').reshape(height, width)
+
+        common_array = common_array.reshape(1, 4, width * height).squeeze(0)
         
+        O = np.matmul(self._Pinv, common_array)
+        multiplier = 0.5
+
+        #azimuth
+        phi = np.arctan2(O[2], O[1] * multiplier)
+        #polarization
+        rho = np.sqrt(np.square(O[1]) + np.square(O[2])) / O[0]
+        
+        return rho.reshape(width, height).T, phi.reshape(width, height).T
+    
+    def get_a_array(self, input_array: np.ndarray):
+        arr_center_part = input_array[2::2, 2::2]
+        arr_center_part = np.repeat(arr_center_part, 2, axis=0)
+        arr_center_part = np.repeat(arr_center_part, 2, axis=1)
+
+        arr_first_row = np.repeat(input_array[0, 2::2], 2).reshape(1, -1)
+        arr_first_col = np.repeat(input_array[2::2, 0], 2).reshape(-1, 1)
+        arr_last_row = np.zeros((1, input_array.shape[1] - 2), dtype=input_array.dtype) 
+        arr_last_col = np.zeros((input_array.shape[0] - 2, 1), dtype=input_array.dtype)
+
+        arr_0_0 = np.array([[input_array[0, 0]]])
+        arr_0_last = np.array([[0]], dtype=input_array.dtype)
+        arr_last_0 = np.array([[0]], dtype=input_array.dtype)
+        arr_last_last = np.array([[0]], dtype=input_array.dtype)
+
+        arr_top_part = np.concatenate([arr_0_0, arr_first_row, arr_0_last], axis=1)
+        arr_middle_part = np.concatenate([arr_first_col, arr_center_part, arr_last_col], axis=1)
+        arr_bottom_part = np.concatenate([arr_last_0, arr_last_row, arr_last_last], axis=1)
+
+        arr = np.concatenate([arr_top_part, arr_middle_part, arr_bottom_part], axis=0)
+
+        return arr
+    
+    def get_b_array(self, input_array: np.ndarray):
+        arr_center_part = input_array[1::2, 2::2]
+        arr_center_part = np.repeat(arr_center_part, 2, axis=0)
+        arr_center_part = np.repeat(arr_center_part, 2, axis=1)
+
+        arr_left_part = np.repeat(input_array[1::2, 0], 2).reshape(-1, 1)
+        arr_middle_part = arr_center_part
+        arr_right_part =  np.zeros((input_array.shape[0], 1), dtype=input_array.dtype)
+
+        arr = np.concatenate([arr_left_part, arr_middle_part, arr_right_part], axis=1)
+
+        return arr
+    
+    def get_c_array(self, input_array: np.ndarray):
+        arr_center_part = input_array[1::2, 1::2]
+        arr_center_part = np.repeat(arr_center_part, 2, axis=0)
+        arr_center_part = np.repeat(arr_center_part, 2, axis=1)
+
+        arr = arr_center_part
+
+        return arr
+    
+    def get_d_array(self, input_array: np.ndarray):
+        arr_center_part = input_array[2::2, 1::2]
+        arr_center_part = np.repeat(arr_center_part, 2, axis=0)
+        arr_center_part = np.repeat(arr_center_part, 2, axis=1)
+
+        arr_top_part = np.repeat(input_array[0, 1::2], 2).reshape(1, -1)
+        arr_middle_part = arr_center_part
+        arr_bottom_part = np.zeros((1, input_array.shape[1]), dtype=input_array.dtype)
+
+        arr = np.concatenate([arr_top_part, arr_middle_part, arr_bottom_part], axis=0)
+
+        return arr
