@@ -23,7 +23,8 @@ def main():
         annotation_path = os.path.join(dataset_dir, 'annotations', 'instances_default.json')
         annotation = AnnotationConverter.read_coco(annotation_path)
         new_annotation = Annotation([str(i) for i in range(9)], {})
-        
+        skipped_files = []
+
         for image_name in annotation.bbox_map:
             new_annotation.bbox_map[image_name] = []
             bboxes = annotation.bbox_map[image_name]
@@ -39,13 +40,21 @@ def main():
                     if os.path.exists(os.path.join(number_crop_dir, str(digit), crop_name)):
                         bbox._class_id = digit
                         new_annotation.bbox_map[image_name].append(bbox)
-                        match_cnt += 1
-                        print(crop_name)
+                        #match_cnt += 1
+                        # print(crop_name)
                         break
                 crop_cnt += 1
+            
+            if len(new_annotation.bbox_map[image_name]) == crop_cnt - 1:
+                match_cnt += 1
+            else:
+                skipped_files.append(f"{image_name}.png")
+                #print(image_name)
         
-        AnnotationConverter.write_coco(new_annotation, os.path.join(dataset_dir, 'annotations', 'digits.json'), '.png')
-        print(match_cnt)
+        # AnnotationConverter.write_coco(new_annotation, os.path.join(dataset_dir, 'annotations', 'digits.json'), '.png')
+        print(f"{dataset_name} match_cnt {match_cnt}")
+        with open(f"{dataset_name}_unlabeled_images.txt", "w") as f:
+            f.write('\n'.join(skipped_files))
 
                 
 if __name__ == '__main__':
