@@ -25,14 +25,14 @@ def test_read_coco():
     
     assert bbox_map['1'][0].get_class_id() == 0
     assert bbox_map['1'][0].get_segmentation() == [[1200, 500, 1260, 500, 1200, 1050]]
-    assert bbox_map['1'][0].get_absolute_bounding_box() == (1200, 500, 60, 550)
+    assert bbox_map['1'][0].get_coordinates() == (1200, 500, 60, 550)
     assert bbox_map['1'][0].get_image_size() == (2448, 2048)
     assert bbox_map['1'][0].get_confidence() == 1.0
     assert bbox_map['1'][0].get_bb_type() == BBType.GroundTruth
 
     assert bbox_map['10'][0].get_class_id() == 1
     assert bbox_map['10'][0].get_segmentation() == {"size": [2448, 2048], "counts": [0, 1]}
-    assert bbox_map['10'][0].get_absolute_bounding_box() == (560, 820, 60, 130)
+    assert bbox_map['10'][0].get_coordinates() == (560, 820, 60, 130)
     assert bbox_map['10'][0].get_image_size() == (2448, 2048)
     assert bbox_map['10'][0].get_confidence() == 1.0
     assert bbox_map['10'][0].get_bb_type() == BBType.GroundTruth
