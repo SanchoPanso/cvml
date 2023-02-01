@@ -189,31 +189,33 @@ class DetectionDataset:
                     self.samples[split_name].append(i)
 
     def install(self, 
-                dataset_path: str, 
+                dataset_path: str,
+                image_ext: str = 'jpg', 
                 install_images: bool = True, 
                 install_labels: bool = True, 
                 install_annotations: bool = True, 
                 install_description: bool = True):
         
         for split_name in self.samples.keys():
-            split_idx = self.samples[split_name]    
+            split_ids = self.samples[split_name]    
             
             if install_images:
                 images_dir = os.path.join(dataset_path, split_name, 'images')
                 os.makedirs(images_dir, exist_ok=True)
                 
-                for i in split_idx:
-                    image_source = self.image_sources[i] 
-                    image_source.save(os.path.join(images_dir, image_source.name + '.jpg'))                
-                    self.logger.info(f"In split \"{split_name}\" image \"{self.image_sources[i].name}\" is processed")
-                self.logger.info(f"In split \"{split_name}\" installing images is complete")
+                for i, split_idx in enumerate(split_ids):
+                    image_source = self.image_sources[split_idx] 
+                    image_source.save(os.path.join(images_dir, image_source.name + image_ext))                
+                    self.logger.info(f"[{i + 1}/{len(split_ids)}] " + 
+                                     f"{split_name}:{self.image_sources[i].name}{image_ext} is done")
+                self.logger.info(f"{split_name} is done")
 
             if install_labels:
                 labels_dir = os.path.join(dataset_path, split_name, 'labels')
                 os.makedirs(labels_dir, exist_ok=True)
                 sample_annotation = self._get_sample_annotation(split_name)
                 AnnotationConverter.write_yolo(sample_annotation, labels_dir)
-                self.logger.info(f"In split \"{split_name}\" installing labels is complete")
+                self.logger.info(f"{split_name}:yolo_labels is done")
             
             if install_annotations:
                 annotation_dir = os.path.join(dataset_path, split_name, 'annotations')
@@ -221,11 +223,11 @@ class DetectionDataset:
                 coco_path = os.path.join(annotation_dir, 'data.json')
                 sample_annotation = self._get_sample_annotation(split_name)
                 AnnotationConverter.write_coco(sample_annotation, coco_path)
-                self.logger.info(f"In split \"{split_name}\" installing annotation is complete")
+                self.logger.info(f"{split_name}:coco_annotation is done")
             
-            if install_description:
-                self._write_description(os.path.join(dataset_path, 'data.yaml'))
-                self.logger.info(f"In split \"{split_name}\" installing description is complete")
+        if install_description:
+            self._write_description(os.path.join(dataset_path, 'data.yaml'))
+            self.logger.info(f"Description is done")
     
     def exclude_by_names(self, excluding_names: Set[str], splits: List[str]):
         
