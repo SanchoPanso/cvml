@@ -53,18 +53,17 @@ def convert_mask_to_coco_rle(color_mask: np.ndarray, bbox: BoundingBox) -> dict:
     return rle
 
 
-class ISLabeledImage(LabeledImage):
-    def __init__(self,
-                 image_source: ImageSource = None,
-                 bboxes: List[BoundingBox] = None,
-                 name: str = None):
+# class ISLabeledImage(LabeledImage):
+#     def __init__(self,
+#                  image_source: ImageSource = None,
+#                  bboxes: List[BoundingBox] = None,
+#                  name: str = None):
         
-        super(ISLabeledImage, self).__init__(image_source, bboxes, name)
+#         super(ISLabeledImage, self).__init__(image_source, bboxes, name)
 
-    def save(self, images_dir: str = None):
-        if images_dir is not None and self.image_source is not None:
-            self.image_source.save(os.path.join(images_dir, self.name + '.jpg'))
-
+#     def save(self, images_dir: str = None):
+#         if images_dir is not None and self.image_source is not None:
+#             self.image_source.save(os.path.join(images_dir, self.name + '.jpg'))
 
 
 class ISDataset(DetectionDataset):
@@ -73,93 +72,53 @@ class ISDataset(DetectionDataset):
     which are used in instance segmentation tasks.
     """
 
-    def __init__(self,
-                 labeled_images: List[LabeledImage] = None, 
-                 splits: Dict[str, List[int]] = None):
-        
-        super(ISDataset, self).__init__(labeled_images, splits)
-        self.classes = []
+    def __init__(self, 
+                 image_sources: List[ImageSource] = None,
+                 annotation: Annotation = None, 
+                 samples: Dict[str, List[int]] = None):
     
-    def __add__(self, other):
-        sum_labeled_images = self.labeled_images + other.labeled_images
-        sum_classes = self.classes
-        
-        self_split_names = set(self.samples.keys())
-        other_split_names = set(other.splits.keys())
-        sum_split_names = self_split_names or other_split_names
-        sum_splits = {}
-        
-        for name in sum_split_names:
-            sum_splits[name] = []
-            if name in self_split_names:
-                sum_splits[name] += self.samples[name]
-            if name in other_split_names:
-                sum_splits[name] += list(map(lambda x: x + len(self), other.splits[name]))
-        
-        dataset = ISDataset(sum_labeled_images, sum_splits)
-        dataset.classes = sum_classes
-        return dataset
+        super(ISDataset, self).__init__(image_sources, annotation, samples)
 
-    def update(self, image_sources: List[ISImageSource] = None,
-               annotation: Annotation = None):
+    def install(self, 
+                dataset_path: str,
+                image_ext: str = 'jpg', 
+                install_images: bool = True, 
+                install_labels: bool = True, 
+                install_annotations: bool = True, 
+                install_description: bool = True):
         
-        image_sources = image_sources or []
-        annotation = annotation or Annotation()
-        self.classes = annotation.classes
-
-        for image_source in image_sources:
-            source_name = image_source.get_name()
-            if source_name in annotation.bbox_map.keys():
-                labels = annotation.bbox_map[source_name]
-            else:
-                labels = []
-            
-            # add segmentation
-            color_mask = image_source.get_color_mask()
-            if color_mask is not None:
-                for bbox in labels:
-                    rle = convert_mask_to_coco_rle(color_mask, bbox)
-                    bbox.set_segmentation(rle)
-            else:
-                labels = []
-                # for bbox in labels:
-                #     width, height = bbox.get_image_size()
-                #     rle = {
-                #         'size': [width, height],
-                #         'counts': [width * height],
-                #     }
-                #     print(bbox.get_image_name(), rle)
-                #     bbox.set_segmentation(rle)
-                    
-            labeled_image = ISLabeledImage(image_source, labels, source_name)
-            self.labeled_images.append(labeled_image)
-            print(source_name)
-
-    def install(self, dataset_path: str, install_images: bool = True, install_annotations: bool = True):
-        
-        converter = AnnotationConverter()
         for split_name in self.samples.keys():
-            split_idx = self.samples[split_name]
+            split_ids = self.samples[split_name]    
+            
+            if install_images:
+                images_dir = os.path.join(dataset_path, split_name, 'images')
+                os.makedirs(images_dir, exist_ok=True)
+                
+                for i, split_idx in enumerate(split_ids):
+                    image_source = self.image_sources[split_idx] 
+                    image_source.save(os.path.join(images_dir, image_source.name + image_ext))                
+                    self.logger.info(f"[{i + 1}/{len(split_ids)}] " + 
+                                     f"{split_name}:{self.image_sources[i].name}{image_ext} is done")
+                self.logger.info(f"{split_name} is done")
 
-            images_dir = os.path.join(dataset_path, split_name, 'images')
-            annotations_dir = os.path.join(dataset_path, split_name, 'annotations')
-
-            os.makedirs(images_dir, exist_ok=True)
-            os.makedirs(annotations_dir, exist_ok=True)
-
-            split_bboxes = []
-
-            for i in split_idx:
-                print(self.labeled_images[i].name)
-                if install_images:
-                    self.labeled_images[i].save(images_dir)
-
-                split_bboxes += self.labeled_images[i].bboxes
-
-            annotation = converter.read_bboxes(split_bboxes, self.classes)
+            if install_labels:
+                labels_dir = os.path.join(dataset_path, split_name, 'labels')
+                os.makedirs(labels_dir, exist_ok=True)
+                sample_annotation = self._get_sample_annotation(split_name)
+                AnnotationConverter.write_yolo_seg(sample_annotation, labels_dir)
+                self.logger.info(f"{split_name}:yolo_labels is done")
+            
             if install_annotations:
-                converter.write_coco(annotation, os.path.join(annotations_dir, 'data.json'))
-
+                annotation_dir = os.path.join(dataset_path, split_name, 'annotations')
+                os.makedirs(annotation_dir, exist_ok=True)
+                coco_path = os.path.join(annotation_dir, 'data.json')
+                sample_annotation = self._get_sample_annotation(split_name)
+                AnnotationConverter.write_coco(sample_annotation, coco_path)
+                self.logger.info(f"{split_name}:coco_annotation is done")
+            
+        if install_description:
+            self._write_description(os.path.join(dataset_path, 'data.yaml'))
+            self.logger.info(f"Description is done")
 
 
 
