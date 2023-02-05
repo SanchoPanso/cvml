@@ -149,15 +149,15 @@ class AnnotationConverter:
                 segmentation = bbox.get_segmentation()
                 relative_segmentation = []
                 
-                if type(segmentation) == list:
+                if type(segmentation) == list and len(segmentation) > 0:
                     width, height = bbox.get_image_size()
                     max_seg_contour = find_max_seg_contour(segmentation)
                     for i in range(len(max_seg_contour)):
                         if i % 2 == 0:
-                            x = segmentation[0][i] / width
+                            x = max_seg_contour[i] / width
                             relative_segmentation.append(x)
                         else:
-                            y = segmentation[0][i] / height
+                            y = max_seg_contour[i] / height
                             relative_segmentation.append(y)
 
                 else:
@@ -174,7 +174,7 @@ class AnnotationConverter:
 
             with open(os.path.join(path, image_name + '.txt'), 'w') as f:
                 for label in labels:
-                    f.write(' '.join(label) + '\n')
+                    f.write(' '.join(list(map(str, label))) + '\n')
                 
     
     @classmethod
