@@ -17,16 +17,21 @@ def main():
     # common_dir = Path(r'C:\Users\HP\Downloads\cvs1_comet_january1')
     # dataset_dirs = [x for x in common_dir.iterdir() if x.is_dir()]
     
-    dataset_dirs = [Path(r'C:\Users\HP\Downloads\number_december1')]
+    dataset_dirs = list(Path(r'/home/student2/datasets/raw/').glob('*/'))
     
     for dataset_dir in dataset_dirs:
-        images_dir = dataset_dir / 'images'
+        print(dataset_dir)
+        try:
+            images_dir = dataset_dir / 'images'
+            
+            orig_annotation_path = dataset_dir / 'annotations' / 'instances_default.json'
+            result_annotation_path = dataset_dir / 'annotations' / 'instance_segmentation.json'
+            
+            annotation = AnnotationConverter.read_coco(orig_annotation_path)
+            masks_paths = list(images_dir.glob(f'*color_mask*'))
+        except Exception:
+            continue
         
-        orig_annotation_path = dataset_dir / 'annotations' / 'instances_default_old.json'
-        result_annotation_path = dataset_dir / 'annotations' / 'instance_segmentation.json'
-        
-        annotation = AnnotationConverter.read_coco(orig_annotation_path)
-        masks_paths = list(images_dir.glob(f'*color_mask*'))
         for mask_path in masks_paths:
             
             name = '_'.join(mask_path.name.split('_')[:-2])
