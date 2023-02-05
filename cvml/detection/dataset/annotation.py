@@ -31,9 +31,13 @@ class Annotation:
             raise ValueError("Wrong classes") # redo
         
         sum_bbox_map = {} 
-        for name in other.bbox_map:
-            sum_bbox_map[name] = other.bbox_map[name]
         for name in self.bbox_map:
             sum_bbox_map[name] = self.bbox_map[name]
+            if name in other.bbox_map:
+                sum_bbox_map[name] += other.bbox_map[name]
+        
+        for name in other.bbox_map:
+            if name not in self.bbox_map:
+                sum_bbox_map[name] = other.bbox_map[name]
         
         return Annotation(sum_classes, sum_bbox_map)
