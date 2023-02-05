@@ -165,8 +165,6 @@ class SPEstimatorNumpy:
         c_arr = self.get_c_array(in_arr)
         d_arr = self.get_d_array(in_arr)
 
-        print("data copied")
-
         common_array = np.zeros((4, height, width), dtype=np.float32)
         common_array[0] = np.array(a_arr.T.reshape(width, height),  order='F').reshape(height, width)
         common_array[1] = np.array(b_arr.T.reshape(width, height),  order='F').reshape(height, width)
