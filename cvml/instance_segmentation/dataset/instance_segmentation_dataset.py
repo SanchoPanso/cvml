@@ -1,6 +1,7 @@
 import os
 import cv2
 import random
+import logging
 import math
 import numpy as np
 from itertools import groupby
@@ -11,9 +12,9 @@ from enum import Enum
 from cvml.core.bounding_box import BoundingBox
 from cvml.detection.dataset.annotation import Annotation
 from cvml.detection.dataset.annotation_converter import AnnotationConverter
-from cvml.detection.dataset.detection_dataset import DetectionDataset, LabeledImage
+from cvml.detection.dataset.detection_dataset import DetectionDataset
 from cvml.detection.dataset.image_source import ImageSource
-from cvml.instance_segmentation.dataset.image_source import ISImageSource
+#from cvml.instance_segmentation.dataset.image_source import ISImageSource
 
 
 def convert_mask_to_coco_rle(color_mask: np.ndarray, bbox: BoundingBox) -> dict:
@@ -78,6 +79,38 @@ class ISDataset(DetectionDataset):
                  samples: Dict[str, List[int]] = None):
     
         super(ISDataset, self).__init__(image_sources, annotation, samples)
+
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.DEBUG)
+
+    
+    def __add__(self, other):
+        
+        # Addition of image sources
+        sum_image_sources = self.image_sources + other.image_sources
+        
+        # Addition of annotation
+        sum_annotation = self.annotation + other.annotation
+        
+        # Addition of samples
+        self_sample_names = set(self.samples.keys())
+        other_sample_names = set(other.samples.keys())
+        
+        # sum_sample_names - union of two sample names 
+        sum_sample_names = self_sample_names or other_sample_names
+        sum_samples = {}
+        
+        # In new samples self indexes remain their values, others - are addicted with number of images in self
+        # (other images addict to the end of common list) 
+        for name in sum_sample_names:
+            sum_samples[name] = []
+            if name in self_sample_names:
+                sum_samples[name] += self.samples[name]
+            if name in other_sample_names:
+                sum_samples[name] += list(map(lambda x: x + len(self), other.samples[name]))
+        
+        return ISDataset(sum_image_sources, sum_annotation, sum_samples)
+    
 
     def install(self, 
                 dataset_path: str,
