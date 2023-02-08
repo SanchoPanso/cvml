@@ -6,7 +6,7 @@ import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from cvml.detection.augmentation.sp_estimator import SPEstimator
-from cvml.detection.dataset.image_transforming import expo
+from cvml.dataset.image_transforming import expo
 
 
 def normalize_min_max(data):

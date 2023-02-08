@@ -9,12 +9,11 @@ from abc import ABC
 from typing import List, Set, Dict, Callable
 from enum import Enum
 
-from cvml.core.bounding_box import BoundingBox
-from cvml.detection.dataset.annotation import Annotation
-from cvml.detection.dataset.annotation_converter import AnnotationConverter
-from cvml.detection.dataset.detection_dataset import DetectionDataset
-from cvml.detection.dataset.image_source import ImageSource
-#from cvml.instance_segmentation.dataset.image_source import ISImageSource
+from cvml.annotation.bounding_box import BoundingBox
+from cvml.annotation.annotation import Annotation
+from cvml.annotation.annotation_converting import write_coco, write_yolo_seg
+from cvml.dataset.detection_dataset import DetectionDataset
+from cvml.dataset.image_source import ImageSource
 
 
 def convert_mask_to_coco_rle(color_mask: np.ndarray, bbox: BoundingBox) -> dict:
@@ -53,18 +52,6 @@ def convert_mask_to_coco_rle(color_mask: np.ndarray, bbox: BoundingBox) -> dict:
 
     return rle
 
-
-# class ISLabeledImage(LabeledImage):
-#     def __init__(self,
-#                  image_source: ImageSource = None,
-#                  bboxes: List[BoundingBox] = None,
-#                  name: str = None):
-        
-#         super(ISLabeledImage, self).__init__(image_source, bboxes, name)
-
-#     def save(self, images_dir: str = None):
-#         if images_dir is not None and self.image_source is not None:
-#             self.image_source.save(os.path.join(images_dir, self.name + '.jpg'))
 
 
 class ISDataset(DetectionDataset):
@@ -138,7 +125,7 @@ class ISDataset(DetectionDataset):
                 labels_dir = os.path.join(dataset_path, split_name, 'labels')
                 os.makedirs(labels_dir, exist_ok=True)
                 sample_annotation = self._get_sample_annotation(split_name)
-                AnnotationConverter.write_yolo_seg(sample_annotation, labels_dir)
+                write_yolo_seg(sample_annotation, labels_dir)
                 self.logger.info(f"{split_name}:yolo_labels is done")
             
             if install_annotations:
@@ -146,7 +133,7 @@ class ISDataset(DetectionDataset):
                 os.makedirs(annotation_dir, exist_ok=True)
                 coco_path = os.path.join(annotation_dir, 'data.json')
                 sample_annotation = self._get_sample_annotation(split_name)
-                AnnotationConverter.write_coco(sample_annotation, coco_path)
+                write_coco(sample_annotation, coco_path)
                 self.logger.info(f"{split_name}:coco_annotation is done")
             
         if install_description:

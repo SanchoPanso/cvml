@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 from typing import List
 from .yolov5_detector import Yolov5Detector
-from cvml.core.bounding_box import BoundingBox, BBFormat, BBType
+from cvml.annotation.bounding_box import BoundingBox, BBFormat, BBType
 
 
 class Visualiser:

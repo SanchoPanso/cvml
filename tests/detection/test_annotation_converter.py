@@ -6,7 +6,7 @@ import json
 project_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 sys.path.append(project_dir)
 
-from cvml.core.bounding_box import BBType, BoundingBox, CoordinatesType, BBFormat
+from cvml.annotation.bounding_box import BBType, BoundingBox, CoordinatesType, BBFormat
 from cvml.detection.dataset.annotation_converter import AnnotationConverter, Annotation
 
 

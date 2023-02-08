@@ -2,7 +2,7 @@ import os
 import glob
 import cv2
 import numpy as np
-from cvml.core.detector import Detector
+from cvml.annotation.detector import Detector
 
 
 def save_txt(img_size: tuple, detector_output: np.array, save_path: str):

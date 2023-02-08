@@ -6,7 +6,7 @@ import cv2
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
-from cvml.detection.dataset.image_source import ImageSource, SingleImageReader, MultipleImageReader, DetectionImageSource
+from cvml.dataset.image_source import ImageSource, SingleImageReader, MultipleImageReader, DetectionImageSource
 
 
 def zero_preprocessing(img: np.ndarray) -> np.ndarray:

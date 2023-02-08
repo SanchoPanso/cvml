@@ -3,8 +3,8 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from cvml.dataset_linking.zipping import unzip_to, unpack_7z
-from cvml.dataset_linking.main_file_ops import mv_dir, rm_dir
+from cvml.file_operations.zipping import unzip_to, unpack_7z
+from cvml.file_operations.main_file_ops import mv_dir, rm_dir
 
 
 def main():

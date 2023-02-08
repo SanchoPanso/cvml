@@ -5,8 +5,8 @@ import cv2
 import time
 from typing import List
 
-from cvml.core.detector import Detector
-from cvml.core.bounding_box import BoundingBox, BBType
+from cvml.inference.detector import Detector
+from cvml.annotation.bounding_box import BoundingBox, BBType
 
 
 class Yolov5Detector(Detector):

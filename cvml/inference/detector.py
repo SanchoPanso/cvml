@@ -2,7 +2,7 @@ import os
 import numpy as np
 from abc import ABC
 from typing import List
-from .bounding_box import BoundingBox
+from cvml.annotation.annotation import BoundingBox
 
 
 class Detector(ABC):

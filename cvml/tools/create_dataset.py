@@ -9,16 +9,16 @@ import argparse
 
 # sys.path.append(os.path.dirname(__file__) + '/../..')
 
-from cvml.core.bounding_box import BoundingBox, CoordinatesType, BBType, BBFormat
-from cvml.detection.dataset.detection_dataset import DetectionDataset
-from cvml.detection.dataset.image_source import ImageSource
+from cvml.annotation.bounding_box import BoundingBox, CoordinatesType, BBType, BBFormat
+from cvml.dataset.detection_dataset import DetectionDataset
+from cvml.dataset.image_source import ImageSource
 from cvml.detection.dataset.annotation import Annotation
 from cvml.detection.dataset.annotation_converter import AnnotationConverter
 from cvml.detection.dataset.annotation_editor import AnnotationEditor
 
-from cvml.detection.dataset.image_source import convert_paths_to_single_sources
+from cvml.dataset.image_source import convert_paths_to_single_sources
 from cvml.detection.augmentation.sp_estimator import SPEstimator
-from cvml.detection.dataset.image_transforming import convert_to_mixed, expo
+from cvml.dataset.image_transforming import convert_to_mixed, expo
 
 from cvml.detection.augmentation.golf_augmentation import MaskMixup, MaskMixupAugmentation
 

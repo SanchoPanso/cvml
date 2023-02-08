@@ -5,7 +5,7 @@ from typing import List
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from cvml.core.bounding_box import BoundingBox, BBType
+from cvml.annotation.bounding_box import BoundingBox, BBType
 from cvml.detection.inference.visualizer import Visualiser
 from cvml.detection.metrics import Evaluator, get_bounding_boxes_from_dir
 from cvml.detection.dataset.io_handling import read_yolo_labels

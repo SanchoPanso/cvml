@@ -1,5 +1,5 @@
 from typing import List, Dict
-from cvml.core.bounding_box import BoundingBox
+from cvml.annotation.bounding_box import BoundingBox
 
 
 class Annotation:

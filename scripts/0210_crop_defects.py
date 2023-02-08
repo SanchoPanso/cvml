@@ -6,9 +6,9 @@ import numpy as np
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from cvml.core.bounding_box import BoundingBox
+from cvml.annotation.bounding_box import BoundingBox
 from cvml.detection.dataset.annotation_converter import AnnotationConverter
-from cvml.detection.dataset.image_transforming import expo
+from cvml.dataset.image_transforming import expo
 
 crop_counter = 1
 

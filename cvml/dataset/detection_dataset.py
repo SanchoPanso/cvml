@@ -8,32 +8,13 @@ from abc import ABC
 from typing import List, Set, Dict, Callable
 from enum import Enum
 import logging
-
 import time
-from cvml.core.bounding_box import BoundingBox
-from cvml.detection.dataset.annotation_converter import AnnotationConverter, write_yolo_labels, read_yolo_labels
-from cvml.detection.dataset.annotation import Annotation
-from cvml.detection.dataset.image_source import ImageSource
 
+from cvml.annotation.bounding_box import BoundingBox
+from cvml.annotation.annotation import Annotation
+from cvml.annotation.annotation_converting import write_coco, write_yolo
+from cvml.dataset.image_source import ImageSource
 
-# class LabeledImage:
-#     def __init__(self,
-#                  image_source: ImageSource = None,
-#                  bboxes: List[BoundingBox] = None,
-#                  name: str = None):
-
-#         self.image_source = image_source
-#         self.bboxes = bboxes or []
-#         self.name = name or image_source.get_name()
-
-#     def save(self, images_dir: str = None, labels_dir: str = None):
-#         if images_dir is not None and self.image_source is not None:
-#             self.image_source.save(os.path.join(images_dir, self.name + '.jpg'))
-
-#         if labels_dir is not None:
-#             write_yolo_labels(os.path.join(labels_dir, self.name + '.txt'),
-#                               self.bboxes)
-        
 
 class DetectionDataset:
     """
@@ -214,7 +195,7 @@ class DetectionDataset:
                 labels_dir = os.path.join(dataset_path, split_name, 'labels')
                 os.makedirs(labels_dir, exist_ok=True)
                 sample_annotation = self._get_sample_annotation(split_name)
-                AnnotationConverter.write_yolo(sample_annotation, labels_dir)
+                write_yolo(sample_annotation, labels_dir)
                 self.logger.info(f"{split_name}:yolo_labels is done")
             
             if install_annotations:
@@ -222,7 +203,7 @@ class DetectionDataset:
                 os.makedirs(annotation_dir, exist_ok=True)
                 coco_path = os.path.join(annotation_dir, 'data.json')
                 sample_annotation = self._get_sample_annotation(split_name)
-                AnnotationConverter.write_coco(sample_annotation, coco_path)
+                write_coco(sample_annotation, coco_path)
                 self.logger.info(f"{split_name}:coco_annotation is done")
             
         if install_description:

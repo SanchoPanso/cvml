@@ -10,7 +10,7 @@ sys.path.append(os.path.dirname(__file__) + '/..')
 
 from cvml.instance_segmentation.dataset.image_transforming import get_mask_contours
 from cvml.detection.dataset.annotation_converter import Annotation, AnnotationConverter
-from cvml.core.bounding_box import BoundingBox
+from cvml.annotation.bounding_box import BoundingBox
 
 
 def main():

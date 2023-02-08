@@ -8,12 +8,12 @@ from typing import Callable
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from cvml.detection.dataset.detection_dataset import DetectionDataset, LabeledImage
+from cvml.dataset.detection_dataset import DetectionDataset, LabeledImage
 from cvml.detection.dataset.annotation_converter import AnnotationConverter
 from cvml.detection.dataset.annotation_editor import AnnotationEditor
 
-from cvml.detection.dataset.image_transforming import expo
-from cvml.detection.dataset.image_source import convert_single_paths_to_sources
+from cvml.dataset.image_transforming import expo
+from cvml.dataset.image_source import convert_single_paths_to_sources
 from cvml.detection.augmentation.sp_estimator import SPEstimator
 
 

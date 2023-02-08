@@ -6,11 +6,11 @@ from typing import List
 import matplotlib.pyplot as plt
 import numpy as np
 
-from cvml.core.bounding_box import BoundingBox, BBType, BBFormat
-from .metrics_utils import MethodAveragePrecision
+from cvml.annotation.bounding_box import BoundingBox, BBType, BBFormat
+from cvml.metrics.detection.metrics_utils import MethodAveragePrecision
 
 
-class Evaluator:
+class DetectionEvaluator:
     def GetPascalVOCMetrics(self,
                             boundingboxes: List[BoundingBox],
                             IOUThreshold=0.5,
@@ -120,7 +120,7 @@ class Evaluator:
                 for j in range(len(gt)):
 
                     # print('Ground truth gt => %s' % (gt[j][3],))
-                    iou = Evaluator.iou(dects[d][3], gt[j][3])
+                    iou = DetectionEvaluator.iou(dects[d][3], gt[j][3])
                     if iou > iouMax:
                         iouMax = iou
                         jmax = j
@@ -185,9 +185,9 @@ class Evaluator:
             prec = np.divide(acc_TP, (acc_FP + acc_TP))
             # Depending on the method, call the right implementation
             if method == MethodAveragePrecision.EveryPointInterpolation:
-                [ap, mpre, mrec, ii] = Evaluator.CalculateAveragePrecision(rec, prec)
+                [ap, mpre, mrec, ii] = DetectionEvaluator.CalculateAveragePrecision(rec, prec)
             else:
-                [ap, mpre, mrec, _] = Evaluator.ElevenPointInterpolatedAP(rec, prec)
+                [ap, mpre, mrec, _] = DetectionEvaluator.ElevenPointInterpolatedAP(rec, prec)
             # add class result in the dictionary to be returned
             r = {
                 'class': c,
@@ -432,7 +432,7 @@ class Evaluator:
         # img = np.zeros((200,200,3), np.uint8)
         for d in detections:
             bb = d.getAbsoluteBoundingBox(BBFormat.XYX2Y2)
-            iou = Evaluator.iou(bbReference, bb)
+            iou = DetectionEvaluator.iou(bbReference, bb)
             # Show blank image with the bounding boxes
             # img = add_bb_into_image(img, d, color=(255,0,0), thickness=2, label=None)
             # img = add_bb_into_image(img, reference, color=(0,255,0), thickness=2, label=None)
@@ -445,10 +445,10 @@ class Evaluator:
     @staticmethod
     def iou(boxA, boxB):
         # if boxes dont intersect
-        if Evaluator._boxesIntersect(boxA, boxB) is False:
+        if DetectionEvaluator._boxesIntersect(boxA, boxB) is False:
             return 0
-        interArea = Evaluator._getIntersectionArea(boxA, boxB)
-        union = Evaluator._getUnionAreas(boxA, boxB, interArea=interArea)
+        interArea = DetectionEvaluator._getIntersectionArea(boxA, boxB)
+        union = DetectionEvaluator._getUnionAreas(boxA, boxB, interArea=interArea)
         # intersection over union
         iou = interArea / union
         assert iou >= 0
@@ -479,10 +479,10 @@ class Evaluator:
 
     @staticmethod
     def _getUnionAreas(boxA, boxB, interArea=None):
-        area_A = Evaluator._getArea(boxA)
-        area_B = Evaluator._getArea(boxB)
+        area_A = DetectionEvaluator._getArea(boxA)
+        area_B = DetectionEvaluator._getArea(boxB)
         if interArea is None:
-            interArea = Evaluator._getIntersectionArea(boxA, boxB)
+            interArea = DetectionEvaluator._getIntersectionArea(boxA, boxB)
         return float(area_A + area_B - interArea)
 
     @staticmethod

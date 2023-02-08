@@ -4,7 +4,7 @@ import pytest
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
 
-from cvml.core.bounding_box import BoundingBox
+from cvml.annotation.bounding_box import BoundingBox
 from cvml.detection.dataset.annotation_editor import AnnotationEditor, Annotation
 
 

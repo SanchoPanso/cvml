@@ -15,7 +15,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 import cvml
 from cvml.detection.augmentation.mask_cut_mix import MaskCutMix
-from cvml.detection.dataset.image_transforming import convert_to_mixed
+from cvml.dataset.image_transforming import convert_to_mixed
 
 
 def get_tube_img(img: np.ndarray) -> np.ndarray:

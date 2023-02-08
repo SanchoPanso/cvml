@@ -4,7 +4,7 @@ import pytest
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
 
-from cvml.detection.dataset.detection_dataset import DetectionDataset, LabeledImage, ImageSource
+from cvml.dataset.detection_dataset import DetectionDataset, LabeledImage, ImageSource
 
 
 def test_magic_add():

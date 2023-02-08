@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 
 sys.path.append(os.path.dirname(__file__) + '/..')
-from cvml.detection.dataset.image_transforming import convert_to_mixed
+from cvml.dataset.image_transforming import convert_to_mixed
 
 
 img = cv2.imread(r'D:\CodeProjects\PythonProjects\TMK_CSV1_detection\TMK_CSV1_detection\images\223.png')
