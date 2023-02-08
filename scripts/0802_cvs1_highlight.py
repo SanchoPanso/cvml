@@ -25,6 +25,18 @@ from cvml.detection.dataset.image_transforming import convert_to_mixed, expo
 from cvml.detection.augmentation.golf_augmentation import MaskMixup, MaskMixupAugmentation
 
 
+def bb_intersection_over_union(boxA, boxB):
+        # determine the (x, y)-coordinates of the intersection rectangle
+        xA = max(boxA[0], boxB[0])
+        yA = max(boxA[1], boxB[1])
+        xB = min(boxA[2], boxB[2])
+        yB = min(boxA[3], boxB[3])
+        interArea = max(0, xB - xA + 1) * max(0, yB - yA + 1)
+        boxAArea = (boxA[2] - boxA[0] + 1) * (boxA[3] - boxA[1] + 1)
+        boxBArea = (boxB[2] - boxB[0] + 1) * (boxB[3] - boxB[1] + 1)
+        iou = interArea / float(boxAArea + boxBArea - interArea)
+        return iou
+
 
 def main():
 
@@ -60,32 +72,52 @@ def main():
             img = cv2.imdecode(np.fromfile(image_path, dtype=np.uint8), cv2.IMREAD_COLOR)
             
             ret, mask = cv2.threshold(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), 250, 255, cv2.THRESH_BINARY)
-            kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (11, 11))
-            mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+            kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (9, 9))
+            mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=4)
             
             contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
             counter = 0
+
+            if name not in annotation.bbox_map:
+                continue
+
+            # for orig_bbox in annotation.bbox_map[name]:
+            #     if annotation.classes[orig_bbox.get_class_id()] not in ['comet', 'number']:
+            #         continue
+            #     x, y, w, h = map(int, orig_bbox.get_coordinates())
+                #cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 6)
             
             for cnt in contours:
-                if cv2.contourArea(cnt) < 30:
+                if cv2.contourArea(cnt) < 70:
                     continue
                 x, y, w, h = cv2.boundingRect(cnt)
                 bbox = BoundingBox(highlight_id, x, y, w, h, 1.0, name, img_size=img.shape[1:])
                 
-                if name in annotation.bbox_map:
-                    annotation.bbox_map[name].append(bbox)
-                else:
-                    annotation.bbox_map[name] = [bbox]
-                
-                cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
-                counter += 1
-            print(counter)
-            
-            cv2.imshow('img', cv2.resize(img, (400, 400)))
-            cv2.imshow('mask', cv2.resize(mask, (400, 400)))
-            cv2.waitKey()
+                iou_max = 0
+                for orig_bbox in annotation.bbox_map[name]:
+                    if annotation.classes[orig_bbox.get_class_id()] not in ['comet', 'number']:
+                        continue
 
-        # AnnotationConverter.write_coco(annotation, new_annotation_path)
+                    iou_max = max(iou_max, 
+                                  bb_intersection_over_union(
+                                      orig_bbox.get_coordinates(format=BBFormat.XYX2Y2),
+                                      bbox.get_coordinates(format=BBFormat.XYX2Y2))
+                    )
+                
+                if iou_max > 0.1:
+                    continue
+
+                annotation.bbox_map[name].append(bbox)
+                #cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 6)
+                counter += 1
+
+            # print(counter)
+            
+            # cv2.imshow('img', cv2.resize(img, (400, 400)))
+            # cv2.imshow('mask', cv2.resize(mask, (400, 400)))
+            # cv2.waitKey()
+
+        AnnotationConverter.write_coco(annotation, new_annotation_path, '.png')
 
 
 

@@ -56,7 +56,7 @@ def main():
 
             if not os.path.exists(img_path):
                 continue
-            img = cv2.imdecode(np.fromfile(img_path, dtype=np.uint8), cv2.IMREAD_GRAYSCALE)
+            img = cv2.imdecode(np.fromfile(img_path, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
 
             for i, bbox in enumerate(bboxes):
                 cls_id = bbox.get_class_id()
