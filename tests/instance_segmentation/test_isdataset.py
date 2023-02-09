@@ -9,8 +9,10 @@ project_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 sys.path.append(project_dir)
 
 from cvml.annotation.bounding_box import BBType, BoundingBox, CoordinatesType, BBFormat
-from cvml.detection.dataset.annotation_converter import AnnotationConverter, Annotation
-from cvml.instance_segmentation.dataset.instance_segmentation_dataset import convert_mask_to_coco_rle
+from cvml.annotation.annotation import Annotation
+from cvml.annotation.annotation_converting import write_coco, write_yolo
+from cvml.annotation.annotation_converting import read_coco, read_yolo
+from cvml.dataset.instance_segmentation_dataset import convert_mask_to_coco_rle
 
 
 def test_convert_mask_to_coco_rle():

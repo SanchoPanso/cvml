@@ -7,13 +7,12 @@ project_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 sys.path.append(project_dir)
 
 from cvml.annotation.bounding_box import BBType, BoundingBox, CoordinatesType, BBFormat
-from cvml.detection.dataset.annotation_converter import AnnotationConverter, Annotation
+from cvml import Annotation, write_coco, write_yolo, read_coco, read_yolo
 
 
 def test_read_coco():
-    converter = AnnotationConverter()
     coco_path = os.path.join(os.path.dirname(__file__), 'test_files', 'test_coco.json')
-    annot = converter.read_coco(coco_path)
+    annot = read_coco(coco_path)
     bbox_map = annot.bbox_map
     images = list(bbox_map.keys())
 
@@ -60,9 +59,8 @@ def test_write_coco():
     classes = ['comet', 'other']
     bbox_map = {'1': [bbox_1], '10': [bbox_2]}
     annot = Annotation(classes, bbox_map)
-    converter = AnnotationConverter()
     result_path = os.path.join(os.path.dirname(__file__), 'test_files', 'test_coco_2.json')
-    converter.write_coco(annot, result_path, image_ext='.png')
+    write_coco(annot, result_path, image_ext='.png')
 
     coco_path = os.path.join(os.path.dirname(__file__), 'test_files', 'test_coco.json')
     with open(result_path) as f:
@@ -80,7 +78,7 @@ def test_read_yolo():
     yolo_path = os.path.join(os.path.dirname(__file__), 'test_files', 'test_yolo')
     img_size = (2448, 2048)
     classes = ['comet', 'other']
-    annot = AnnotationConverter.read_yolo(yolo_path, img_size, classes)
+    annot = read_yolo(yolo_path, img_size, classes)
     bbox_map = annot.bbox_map
     images = list(bbox_map.keys())
 
@@ -130,7 +128,7 @@ def test_write_yolo():
     
     result_path = os.path.join(os.path.dirname(__file__), 'test_files', 'test_yolo_2')
     os.makedirs(result_path, exist_ok=True)
-    AnnotationConverter.write_yolo(annot, result_path)
+    write_yolo(annot, result_path)
 
     gt_path = os.path.join(os.path.dirname(__file__), 'test_files', 'test_yolo')
     

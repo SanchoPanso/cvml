@@ -1,4 +1,4 @@
-__version__ = '0.1.1'
+__version__ = '0.2.0'
 
 import logging
 
@@ -12,6 +12,7 @@ from cvml.annotation.annotation_edition import change_classes_by_id
 from cvml.annotation.annotation_edition import change_classes_by_names
 from cvml.annotation.annotation_edition import change_classes_by_new_classes
 
+from cvml.dataset.image_source import ImageSource
 from cvml.dataset.detection_dataset import DetectionDataset
 from cvml.dataset.instance_segmentation_dataset import ISDataset
 
