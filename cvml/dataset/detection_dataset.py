@@ -168,6 +168,33 @@ class DetectionDataset:
                 new_name = image_source.name
                 if new_name in orig_names_set:
                     self.samples[split_name].append(i)
+    
+    def add_with_proportion(self, dataset, proportions: dict):
+        
+        assert proportions.keys() == self.samples.keys()
+        
+        orig_length = len(self)
+        dataset_length = len(dataset)
+        result_length = orig_length + dataset_length
+        
+        dataset_proportions = {}
+        for name in self.samples:
+            orig_sample_length = len(self.samples[name])
+            result_sample_length = proportions[name] * result_length
+            dataset_proportions[name] = (result_sample_length - orig_sample_length) / dataset_length
+        
+        dataset.split_by_proportions(dataset_proportions)
+        new_dataset = self + dataset
+        
+        # logging
+        message = "Create summary dataset with samples: "
+        for i, split_name in enumerate(self.samples.keys()):
+            message += f"{split_name}({len(self.samples[split_name])})"
+            if i != len(self.samples.keys()) - 1:
+                message += ", "
+        self.logger.info(message)
+        
+        return new_dataset
 
     def install(self, 
                 dataset_path: str,

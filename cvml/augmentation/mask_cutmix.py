@@ -298,5 +298,5 @@ def get_tube_img(img: np.ndarray) -> np.ndarray:
     warp_mat = cv2.getPerspectiveTransform(box.astype(np.float32), crop_box.astype(np.float32))
     crop_img = cv2.warpPerspective(img, warp_mat, img.shape[1::-1])
     
-    return crop_img
+    return crop_img, warp_mat
 
