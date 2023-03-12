@@ -4,3 +4,4 @@ venv*
 datasets
 weights
 trash
+*.egg-info

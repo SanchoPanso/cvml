@@ -29,6 +29,28 @@ def expo(img: np.ndarray, step: int) -> np.ndarray:
     return img
 
 
+def quadratic_lightening(img: np.ndarray, coef: float = 2.35):
+    lut = np.zeros((256,), dtype='uint8')
+    for i in range(256):
+        lut_i = i + coef * (i - i**2 / 255)
+        lut[i] = np.clip(lut_i, 0, 255)
+
+    if len(img.shape) == 2: # Grayscale case
+        img = cv2.LUT(img, lut)
+        
+    else:   # RGB case
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+        
+        hsv = cv2.split(img)
+        hsv = (hsv[0], hsv[1], cv2.LUT(hsv[2], lut))   
+             
+        img = cv2.merge(hsv)                                 
+        img = cv2.cvtColor(img, cv2.COLOR_HSV2RGB)     
+                
+    return img
+
+
+
 def normalize_min_max(data):
     data_min = data.min()
     data_max = data.max()
