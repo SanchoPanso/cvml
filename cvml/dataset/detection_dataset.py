@@ -215,7 +215,7 @@ class DetectionDataset:
                     image_source = self.image_sources[split_idx] 
                     image_source.save(os.path.join(images_dir, image_source.name + image_ext))                
                     self.logger.info(f"[{i + 1}/{len(split_ids)}] " + 
-                                     f"{split_name}:{self.image_sources[i].name}{image_ext} is done")
+                                     f"{split_name}:{image_source.name}{image_ext} is done")
                 self.logger.info(f"{split_name} is done")
 
             if install_labels:
