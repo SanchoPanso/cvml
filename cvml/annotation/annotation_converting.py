@@ -128,10 +128,10 @@ def read_yolo(path: str, img_size: tuple, classes: List[str] = None, data_yaml_p
     return annotation
 
 
-def write_yolo(annotation: Annotation, path: str):
+def write_yolo(annotation: Annotation, path: str, with_segmentation: bool = False):
     for image_name in annotation.bbox_map:
         bboxes = annotation.bbox_map[image_name]
-        write_yolo_labels(os.path.join(path, image_name + '.txt'), bboxes)
+        write_yolo_labels(os.path.join(path, image_name + '.txt'), bboxes, with_segmentation)
 
 
 def write_yolo_seg(annotation: Annotation, path: str):
@@ -336,13 +336,40 @@ def read_yolo_labels(path: str, img_size: tuple) -> List[BoundingBox]:
     return bboxes
 
 
-def write_yolo_labels(path: str, bboxes: List[BoundingBox]):
+# def write_yolo_labels(path: str, bboxes: List[BoundingBox]):
+#     with open(path, 'w') as f:
+#         for bbox in bboxes:
+#             cls_id = bbox.get_class_id()
+#             xc, yc, w, h = bbox.get_relative_bounding_box()
+#             line = f"{cls_id} {xc} {yc} {w} {h}\n"
+#             f.write(line)
+
+def write_yolo_labels(path: str, bboxes: List[BoundingBox], with_segmentation: bool = False):
     with open(path, 'w') as f:
         for bbox in bboxes:
             cls_id = bbox.get_class_id()
-            xc, yc, w, h = bbox.get_relative_bounding_box()
-            line = f"{cls_id} {xc} {yc} {w} {h}\n"
-            f.write(line)
+
+            if with_segmentation:
+                seg = bbox.get_segmentation()
+                w, h = bbox.get_image_size()
+
+                x_coords = seg[0][0::2]
+                y_coords = seg[0][1::2]
+
+                x_coords = map(lambda x: x / w, x_coords)
+                y_coords = map(lambda x: x / h, y_coords)
+                
+                seg[0][0::2] = x_coords
+                seg[0][1::2] = y_coords
+                
+                line_words = [str(cls_id)] + [str(s) for s in seg[0]]
+                line = ' '.join(line_words) + '\n'
+                f.write(line)
+            
+            else:
+                xc, yc, w, h = bbox.get_relative_bounding_box()
+                line = f"{cls_id} {xc} {yc} {w} {h}\n"
+                f.write(line)
 
 def find_max_seg_contour(segmentation: list) -> list:
     max_idx = 0

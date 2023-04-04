@@ -202,7 +202,8 @@ class DetectionDataset:
                 install_images: bool = True, 
                 install_labels: bool = True, 
                 install_annotations: bool = True, 
-                install_description: bool = True):
+                install_description: bool = True,
+                with_segmentation: bool = False):
         
         for split_name in self.samples.keys():
             split_ids = self.samples[split_name]    
@@ -222,7 +223,7 @@ class DetectionDataset:
                 labels_dir = os.path.join(dataset_path, split_name, 'labels')
                 os.makedirs(labels_dir, exist_ok=True)
                 sample_annotation = self._get_sample_annotation(split_name)
-                write_yolo(sample_annotation, labels_dir)
+                write_yolo(sample_annotation, labels_dir, with_segmentation)
                 self.logger.info(f"{split_name}:yolo_labels is done")
             
             if install_annotations:
